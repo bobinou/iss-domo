@@ -7,9 +7,9 @@ return array(
 	*/
 	
 	'domoticz' => 1,
-	'freebox_player' => 1,
-	'freebox_server' => 1,
+	'freebox_player' => 0,
+	'freebox_server' => 0,
 	'xbmc' => 0,
-	'nas' => 1,
+	'nas' => 0,
 
 );
