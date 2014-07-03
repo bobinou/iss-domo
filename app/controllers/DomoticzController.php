@@ -348,6 +348,7 @@ class DomoticzController extends BaseController
 		}
 		
 		//Add Freebox server infos
+		if(Config::get('hardware.freebox_server') == 1){
 		$freeboxserver = $this->getfreebox();
 		if(isset($freeboxserver['config'])){
 			foreach ($freeboxserver['config'] as $freeserv) {
@@ -405,6 +406,7 @@ class DomoticzController extends BaseController
 					);
 
 			}
+		}
 		}
 
 		//Add movies
