@@ -7,4 +7,5 @@ return array(
     'app_id' => 'APIFreebox',
     'app_name' => 'Freebox from domoticz',
     'app_version' => '1.0',
+    'remote_code' => 'xxxxxx'
 );
