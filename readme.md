@@ -105,6 +105,10 @@ Editer le fichier ```/var/www/iss-domo/app/config/hardware.php```
 
 Activer la gestion de la Freebox Server en indiquant ``` 'freebox_server' => 1,```.
 
+Supprimer le fichier ```/var/www/iss-domo/app/storage/freebox/token```
+
+> sudo rm /var/www/iss-domo/app/storage/freebox/token
+
 Lancer depuis votre navigateur l'url en fonction de votre configuration) ```http://192.168.0.26:8000/freebox```.
 
 Votre Freebox Server (sur son écran) va alors vous demander de valider l'accès au logiciel ISS-Domo, répondre OUI avec la flèche de droite.
