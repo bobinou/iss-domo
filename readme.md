@@ -1,25 +1,99 @@
-## Laravel PHP Framework
+ISS-DOMO
+---
 
-[![Build Status](https://travis-ci.org/laravel/framework.svg)](https://travis-ci.org/laravel/framework)
-[![Total Downloads](https://poser.pugx.org/laravel/framework/downloads.svg)](https://packagist.org/packages/laravel/framework)
-[![Latest Stable Version](https://poser.pugx.org/laravel/framework/v/stable.svg)](https://packagist.org/packages/laravel/framework)
-[![Latest Unstable Version](https://poser.pugx.org/laravel/framework/v/unstable.svg)](https://packagist.org/packages/laravel/framework)
-[![License](https://poser.pugx.org/laravel/framework/license.svg)](https://packagist.org/packages/laravel/framework)
+Convert ISS Imperihome to Domoticz / Freebox Player / Freebox Server / XBMC / NAS
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable, creative experience to be truly fulfilling. Laravel attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as authentication, routing, sessions, and caching.
 
-Laravel aims to make the development process a pleasing one for the developer without sacrificing application functionality. Happy developers make the best code. To this end, we've attempted to combine the very best of what we have seen in other web frameworks, including frameworks implemented in other languages, such as Ruby on Rails, ASP.NET MVC, and Sinatra.
+---
+---
+1.INTRODUCTION
 
-Laravel is accessible, yet powerful, providing powerful tools needed for large, robust applications. A superb inversion of control container, expressive migration system, and tightly integrated unit testing support give you the tools you need to build any application with which you are tasked.
+ISS-Domo permet de faire communiquer l'application Android Imperihome avec le logiciel Domoticz.
 
-## Official Documentation
+ISS-Domo repose sur le framework "Laravel" https://github.com/laravel/laravel.
 
-Documentation for the entire framework can be found on the [Laravel website](http://laravel.com/docs).
+ISS-Domo est développé en PHP.
 
-### Contributing To Laravel
+ISS-DOMO peut être installé sur un Raspberry.
 
-**All issues and pull requests should be filed on the [laravel/framework](http://github.com/laravel/framework) repository.**
+ISS-DOMO peut être installé sur le même serveur que Domoticz.
+
+---
+---
+2.INSTALLATION des DEPENDANCES et de ISS-DOMO
+
+ISS-Domo is install with the next command in the directory /var/www. You could install it where you want.
+
+> sudo apt-get update && sudo apt-get install php5 && sudo apt-get install php5-mcrypt && sudo apt-get install php5-curl && sudo apt-get install unzip && sudo apt-get install git-core && cd /var/www/ && sudo git clone https://github.com/bobinou/iss-domo.git && sudo chmod -R 777 /var/www/iss-domo/
+
+---
+---
+4.INSTALLATION du service ISS-DOMO :
+
+> sudo cp /var/www/iss-domo/iss-domo.sh /etc/init.d/iss-domo.sh
+
+> sudo chmod +x /etc/init.d/iss-domo.sh
+
+> sudo update-rc.d iss-domo.sh defaults
+
+---
+---
+5.CONFIGURATION du service ISS-DOMO :
+
+Editer le fichier /etc/init.d/iss-domo.sh et modifier les variables suivantes en fonction de votre installation :
+
+> sudo nano /etc/init.d/iss-domo.sh
+
+``` ISSDOMO_IP="192.168.0.26" ```
+
+``` ISSDOMO_PORT=8000 ```
+
+``` ISSDOMO_PATH="/var/www/iss-domo/" ```
+
+===
+
+Pour démarrer le service :
+
+> sudo service iss-domo.sh start
+
+Pour arrêter le service :
+
+> sudo service iss-domo.sh stop
+
+Pour contrôler le service :
+
+> sudo service iss-domo.sh status
+
+
+---
+---
+6.PARAMETRAGE de ISS-DOMO pour Domoticz
+
+Editer le fichier ```/var/www/iss-domo/app/config/iss-domo.php```
+
+> sudo nano /var/www/iss-domo/app/config/iss-domo.php
+
+Modifier la ligne : ```domoticz_url``` afin d'indiquer l'url d'accès à votre serveur Domoticz.
+
+Si Domoticz est installé sur le même serveur et indiquer par exemple : ```http://localhost:8180```
+
+---
+---
+7.PARAMETRAGE de Imperihome
+
+Ajouter depuis l'application Imperihome un systeme "Imperihome Standard System"
+
+Indiquer en url en fonction de l'adresse de votre serveur ISS-DOMO : ```http://192.168.0.26:8000/```
+
+---
+---
+8.Mise a jour de ISS-DOMO
+
+> cd /var/www/iss-domo/ && git pull
+
+La configuration est conservée.
+
 
 ### License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT)
+ISS-Domo is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT)
