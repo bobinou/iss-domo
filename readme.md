@@ -12,6 +12,8 @@ ISS-Domo permet de faire communiquer l'application Android Imperihome avec le lo
 
 ISS-Domo repose sur le framework "Laravel" https://github.com/laravel/laravel.
 
+ISS-Domo utilise la ClassePhpFreebox https://github.com/DjMomo/ClassePhpFreebox
+
 ISS-Domo est développé en PHP.
 
 ISS-DOMO peut être installé sur un Raspberry.
@@ -92,6 +94,36 @@ Indiquer en url en fonction de l'adresse de votre serveur ISS-DOMO : ```http://1
 > cd /var/www/iss-domo/ && git pull
 
 La configuration est conservée.
+
+---
+---
+9.PARAMETRAGE de ISS-DOMO pour Freebox Server
+
+Editer le fichier ```/var/www/iss-domo/app/config/hardware.php```
+
+> sudo nano /var/www/iss-domo/app/config/hardware.php
+
+Activer la gestion de la Freebox Server en indiquant ``` 'freebox_server' => 1,```.
+
+Lancer depuis votre navigateur l'url en fonction de votre configuration) ```http://192.168.0.26:8000/freebox```.
+
+Votre Freebox Server (sur son écran) va alors vous demander de valider l'accès au logiciel ISS-Domo, répondre OUI avec la flèche de droite.
+
+Si l'url lancée précédement vous a renvoyé une erreur, relancez la. En fonction normal cette url doit afficher une liste de valeurs.
+
+DEBUG :
+
+Pour vérifier qu'ISS-Domo a bien accès à la Freebox Server, rendez-vous sur son interface de gestion, Paramètres de la Freebox, Gestion des Accès, Onglet Application. Dans cette liste doit se trouver ISS-Domo.
+
+Si ISS-Domo est dans la liste mais est "en attente de validation" ou "délais dépassé" :
+
+-supprimer l'application depuis l'interface Freebox Server
+
+-supprimer le fichier ```/var/www/iss-domo/app/storage/freebox/token```
+
+> sudo rm /var/www/iss-domo/app/storage/freebox/token
+
+-relancer l'url ```http://192.168.0.26:8000/freebox```
 
 
 ### License
