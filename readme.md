@@ -177,7 +177,7 @@ Sur votre serveur ISS-Domo :
 
 ``` FREE_SERV_TEMP_CPU_M="31"``` 
 
-``` FREE_SERV_FAN="32"``` 
+``` FREE_SERV_FAN="32" ``` 
 
 Rendez exécutable le script freebox.sh
 
