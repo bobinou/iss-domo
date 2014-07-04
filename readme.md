@@ -167,15 +167,15 @@ Sur votre serveur ISS-Domo :
 
 > sudo nano /var/www/iss-domo/freebox.sh
 
-``` ISSDOMO_SERVER="192.168.0.26:8000"```
+``` ISSDOMO_SERVER="192.168.0.26:8000" ```
 
-``` DOMOTICZ_SERVER="192.168.0.26:8180"``` 
+``` DOMOTICZ_SERVER="192.168.0.26:8180" ``` 
 
-``` FREE_SERV_TEMP_SW="29"``` 
+``` FREE_SERV_TEMP_SW="29" ``` 
 
-``` FREE_SERV_TEMP_CPU_B="30"``` 
+``` FREE_SERV_TEMP_CPU_B="30" ``` 
 
-``` FREE_SERV_TEMP_CPU_M="31"``` 
+``` FREE_SERV_TEMP_CPU_M="31" ``` 
 
 ``` FREE_SERV_FAN="32" ``` 
 
@@ -191,7 +191,7 @@ Si le fonctionnement est OK, ajouter une tâche planifiée, par exemple :
 
 > crontab -e
 
-```*/2 * * * * /var/www/iss-domo/freebox.sh``` 
+```*/2 * * * * /var/www/iss-domo/freebox.sh ``` 
 
 La tâche planifiée remontera dans Domoticz les données de la Freebox Server toutes les 2 minutes.
 
