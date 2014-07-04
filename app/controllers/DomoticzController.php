@@ -17,7 +17,7 @@ class DomoticzController extends BaseController
 	public function system()
 	{
 		return Response::json(array (
-			'id' => 'Domoticz',
+			'id' => 'ISS-Domo',
 			'apiversion' => 1,
 		));
 	}
@@ -101,13 +101,12 @@ class DomoticzController extends BaseController
 	 */
 	public function rooms()
 	{
-
-		$input = $this->getroom();
-
 		// convert to app format
 		$output = new stdClass();
 		$output->rooms = array();
-
+		
+		if(Config::get('hardware.domoticz') == 1){
+		$input = $this->getroom();
 		if(isset($input['result'])){
 
 		foreach ($input['result'] as $rooms) {
@@ -124,20 +123,8 @@ class DomoticzController extends BaseController
 				'name' => 'bsss',
 				);
 		}
-
-		/**
-		// Add Camera Rooms
-		$output->rooms[] = array (
-				'id' => '666',
-				'name' => 'Cameras',
-				);
-
-		// Add Scenes Rooms
-		$output->rooms[] = array (
-				'id' => '888',
-				'name' => 'Scenes',
-				);
-		**/
+		}
+		
 		// Add Movies Rooms
 		if(Config::get('hardware.nas') == 1){
 		$output->rooms[] = array (
@@ -258,9 +245,11 @@ class DomoticzController extends BaseController
 	 */
 	public function devices()
 	{
-		$input = $this->getroom();
 		$output = new stdClass();
 		$output->devices = array();
+		
+		if(Config::get('hardware.domoticz') == 1){
+		$input = $this->getroom();
 		if(isset($input['result'])){
 		foreach ($input['result'] as $rooms) {
 
@@ -346,9 +335,10 @@ class DomoticzController extends BaseController
 
 			}
 		}
+		}
 		
 		//Add Freebox server infos
-		if(Config::get('hardware.freebox_server') == 1){
+		if(Config::get('hardware.freebox_server') == 1 AND Config::get('hardware.domoticz') == 0){
 		$freeboxserver = $this->getfreebox();
 		if(isset($freeboxserver['config'])){
 			foreach ($freeboxserver['config'] as $freeserv) {
@@ -409,7 +399,7 @@ class DomoticzController extends BaseController
 		}
 		}
 
-		//Add movies
+		//Add movies from nas
 		if(Config::get('hardware.nas') == 1){
 		$films = $this->_getMovies();
 			foreach ($films as $ff) {
