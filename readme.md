@@ -213,6 +213,29 @@ Si ISS-Domo est dans la liste mais est "en attente de validation" ou "délais d�
 
 -Votre Freebox Server (sur son écran) va alors vous demander de valider l'accès au logiciel ISS-Domo, répondre OUI avec la flèche de droite.
 
+---
+---
+11.PARAMETRAGE de ISS-DOMO pour XBMC (AVEC ou SANS Domoticz)
+
+Editer le fichier ```/var/www/iss-domo/app/config/hardware.php```
+
+> sudo nano /var/www/iss-domo/app/config/hardware.php
+
+Activer la gestion de la Freebox Server en indiquant ``` 'xbmc' => 1,```.
+
+Désactiver ou activer la gestion de Domoticz en indiquant ``` 'domoticz' => 0,``` ou ``` 'domoticz' => 0,```.
+
+Editer le fichier ```/var/www/iss-domo/app/config/xbmc.php```
+
+> sudo nano /var/www/iss-domo/app/config/xbmc.php
+
+Dans ce fichier indiquer l'url d'XBMC ainsi que son port à la ligne  ``` 'xbmc_url' => 'http://192.168.0.26:8080/jsonrpc' ```
+
+Indiquer ensuite si vous souhaitez utiliser la médiathèque de films et/ou de musiques aux lignes
+  ``` ''xbmc_movies' => 1   ```
+  ```	'xbmc_songs' => 1   ```
+
+
 ### License
 
 ISS-Domo is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT)
