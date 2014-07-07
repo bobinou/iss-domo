@@ -8,3 +8,5 @@ Route::get('system', 'DomoticzController@system');
 Route::get('/', 'DomoticzController@system');
 Route::get('movies', 'DomoticzController@getmovies');
 Route::get('freebox', 'DomoticzController@getfreebox');
+Route::get('xbmcmovies', 'DomoticzController@getxbmcmovies');
+Route::get('xbmcsongs', 'DomoticzController@getxbmcsongs');
