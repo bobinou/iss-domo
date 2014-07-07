@@ -22,6 +22,59 @@ class DomoticzController extends BaseController
 		));
 	}
 
+	public function getxbmcmovies()
+	{
+		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_movies') == 1){
+		$client = $this->getClient()->getClient();
+		$request = $client->createRequest('GET', Config::get('xbmc.xbmc_url'));
+		$q = $request->getQuery();
+
+		$params = Config::get('xbmc.args-movies');
+
+		foreach ($params as $k => $v) {
+			$q->set($k, $v);
+		}
+
+		$response = $request->send();
+		return $response->json();
+		}
+	}
+	
+	public function getxbmcsongs()
+	{
+		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_songs') == 1){
+		$client = $this->getClient()->getClient();
+		$request = $client->createRequest('GET', Config::get('xbmc.xbmc_url'));
+		$q = $request->getQuery();
+
+		$params = Config::get('xbmc.args-songs');
+
+		foreach ($params as $k => $v) {
+			$q->set($k, $v);
+		}
+
+		$response = $request->send();
+		return $response->json();
+		}
+	}
+	
+	/**public function getxbmcplaying()
+	{
+		if(Config::get('hardware.xbmc') == 1){
+		$client = $this->getClient()->getClient();
+		$request = $client->createRequest('GET', Config::get('xbmc.xbmc_url'));
+		$q = $request->getQuery();
+
+		$params = Config::get('xbmc.what_is_playing');
+
+		foreach ($params as $k => $v) {
+			$q->set($k, $v);
+		}
+
+		$response = $request->send();
+		return $response->json();
+		}
+	}**/
 
 	public function getMovies()
 	{
@@ -126,10 +179,18 @@ class DomoticzController extends BaseController
 		}
 		
 		// Add Movies Rooms
-		if(Config::get('hardware.nas') == 1){
+		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_movies') == 1){
 		$output->rooms[] = array (
 				'id' => '999',
 				'name' => 'Films',
+				);
+		}
+		
+		// Add Songs Rooms
+		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_songs') == 1){
+		$output->rooms[] = array (
+				'id' => '998',
+				'name' => 'Musiques',
 				);
 		}
 
@@ -144,7 +205,7 @@ class DomoticzController extends BaseController
 	public function device($deviceId, $actionName, $actionParam = null)
 	{
 		// file_put_contents('/var/www/laravel/export.log', $deviceId.'-'.$actionName.'-'.$actionParam."\n");
-		// For switchs, Dimmer, Lock
+		//*** For switchs, Dimmer, Lock ***
 		if($actionName == 'setStatus'){
 		$actionName = 'setStatus' == $actionName ? 'switchlight' : $actionName;
 		$actionParam = '0' == $actionParam ? 'Off' : 'On';
@@ -158,9 +219,97 @@ class DomoticzController extends BaseController
 
 		return Response::json($output);
 		}
+		
+		//*** For MOVIES from XBMC ***
+		// Launch Movie to XBMC where type command launchScene
+		if($actionName == 'launchScene' AND strpos($deviceId, 'xbmove')){
+		
+		//What is the id of the movie
+		$arraydeviceId = explode("-", $deviceId);
+		$deviceId = $arraydeviceId[0];
 
-		// For movies
-		if(Config::get('hardware.nas') == 1){
+		//Clear Xbmc playlist (id=0)
+		$client = $this->getClient()->getClient();
+		$request = $client->createRequest('GET', Config::get('xbmc.xbmc_url'));
+		$q = $request->getQuery();
+		$params = Config::get('xbmc.clear_playlist');
+		foreach ($params as $k => $v) {
+			$q->set($k, $v);
+		}
+		$response = $request->send();
+		
+		//Add movie ($deviceId) to Playlist (id=0)
+		$client = $this->getClient()->getClient();
+		$request = $client->createRequest('GET', Config::get('xbmc.xbmc_url'));
+		$q = $request->getQuery();
+		$params = array(
+        'request' => '{"jsonrpc":"2.0","id":1,"method":"Playlist.Add","params":{"playlistid":0,"item":{"movieid":'.$deviceId.'}}}'
+		);
+		foreach ($params as $k => $v) {
+			$q->set($k, $v);
+		}
+		$response = $request->send();
+		
+		//Play Xbmc playlist (id=0)
+		$client = $this->getClient()->getClient();
+		$request = $client->createRequest('GET', Config::get('xbmc.xbmc_url'));
+		$q = $request->getQuery();
+		$params = Config::get('xbmc.play_playlist');
+		foreach ($params as $k => $v) {
+			$q->set($k, $v);
+		}
+		$response = $request->send();
+		
+		}
+		
+		
+		//*** For SONGS from XBMC ***
+		// Launch Songs to XBMC where type command launchScene
+		if($actionName == 'launchScene' AND strpos($deviceId, 'xbsong')){
+		
+		//What is the id of the song
+		$arraydeviceId = explode("-", $deviceId);
+		$deviceId = $arraydeviceId[0];
+
+		//Clear Xbmc playlist (id=0)
+		$client = $this->getClient()->getClient();
+		$request = $client->createRequest('GET', Config::get('xbmc.xbmc_url'));
+		$q = $request->getQuery();
+		$params = Config::get('xbmc.clear_playlist');
+		foreach ($params as $k => $v) {
+			$q->set($k, $v);
+		}
+		$response = $request->send();
+		
+		//Add song ($deviceId) to Playlist (id=0)
+		$client = $this->getClient()->getClient();
+		$request = $client->createRequest('GET', Config::get('xbmc.xbmc_url'));
+		$q = $request->getQuery();
+		$params = array(
+        'request' => '{"jsonrpc":"2.0","id":1,"method":"Playlist.Add","params":{"playlistid":0,"item":{"songid":'.$deviceId.'}}}'
+		);
+		foreach ($params as $k => $v) {
+			$q->set($k, $v);
+		}
+		$response = $request->send();
+		
+		//Play Xbmc playlist (id=0)
+		$client = $this->getClient()->getClient();
+		$request = $client->createRequest('GET', Config::get('xbmc.xbmc_url'));
+		$q = $request->getQuery();
+		$params = Config::get('xbmc.play_playlist');
+		foreach ($params as $k => $v) {
+			$q->set($k, $v);
+		}
+		$response = $request->send();
+		
+		}
+		
+		
+
+		//*** For movies from NAS ***
+		// TEST NOT IMPEMENTED
+		/**if(Config::get('hardware.nas') == 1){
 		if($actionName == 'launchScene'){
 		$arraydeviceId = explode("-", $deviceId);
 		$deviceId = $arraydeviceId[0];
@@ -235,7 +384,7 @@ class DomoticzController extends BaseController
 		$response = $request->send();
 
 		}
-		}
+		}**/
 
 	}
 
@@ -399,7 +548,7 @@ class DomoticzController extends BaseController
 		}
 		}
 
-		//Add movies from nas
+		//Add movies from NAS
 		if(Config::get('hardware.nas') == 1){
 		$films = $this->_getMovies();
 			foreach ($films as $ff) {
@@ -413,6 +562,62 @@ class DomoticzController extends BaseController
 
 			}
 		}
+		
+		//Add movies from XBMC
+		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_movies') == 1){
+		$xbmcfilms = $this->getxbmcmovies();
+			foreach ($xbmcfilms['result']['movies'] as $xfilms) {
+				$output->devices[] = array(
+					'id' => $xfilms['movieid'].'-xbmove',
+					'name' => $xfilms['label'],
+					'type' => 'DevScene',
+					'room' => '999',
+					'params' => array(),
+					);
+
+			}
+		}
+		
+		//Add songs from XBMC
+		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_songs') == 1){
+		$xbmcmusiques = $this->getxbmcsongs();
+			foreach ($xbmcmusiques['result']['songs'] as $xmusiques) {
+				$output->devices[] = array(
+					'id' => $xmusiques['songid'].'-xbsong',
+					'name' => $xmusiques['label'],
+					'type' => 'DevScene',
+					'room' => '998',
+					'params' => array(),
+					);
+
+			}
+		}
+		
+		//Add Current Play in Xbmc
+		/**if(Config::get('hardware.xbmc') == 1){
+		$xbmcplaying = $this->getxbmcplaying();
+		if(isset($xbmcplaying['result'])){
+			foreach ($xbmcplaying['result'] as $playing) {
+				$output->devices[] = array(
+					'id' => 'playing_xbmc',
+					'name' => $playing['label'],
+					'type' => 'DevGenericSensor',
+					'room' => '999',
+					'params' => array(),
+					);
+
+			}
+		}
+		else{
+			$output->devices[] = array(
+					'id' => 'playing_xbmc',
+					'name' => 'Pas de lecture',
+					'type' => 'DevGenericSensor',
+					'room' => '999',
+					'params' => array(),
+					);
+		}
+		}**/
 
 		return Response::json($output);
 
@@ -495,7 +700,6 @@ class DomoticzController extends BaseController
 
 		return $newType;
 	}
-
 
 private static function convertDeviceStatus ($device)
 	{
