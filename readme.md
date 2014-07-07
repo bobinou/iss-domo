@@ -97,7 +97,7 @@ Indiquer en url en fonction de l'adresse de votre serveur ISS-DOMO : ```http://1
 ---
 8.Mise a jour de ISS-DOMO
 
-> cd /var/www/iss-domo/ && git pull
+> cd /var/www/iss-domo/ && sudo git pull
 
 La configuration est conservée.
 
