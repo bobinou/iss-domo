@@ -221,9 +221,9 @@ Editer le fichier ```/var/www/iss-domo/app/config/hardware.php```
 
 > sudo nano /var/www/iss-domo/app/config/hardware.php
 
-Activer la gestion de la Freebox Server en indiquant ``` 'xbmc' => 1,```.
+Activer la gestion de XBMC en indiquant ``` 'xbmc' => 1,```.
 
-Désactiver ou activer la gestion de Domoticz en indiquant ``` 'domoticz' => 0,``` ou ``` 'domoticz' => 0,```.
+Désactiver ou activer la gestion de Domoticz en indiquant ``` 'domoticz' => 0,``` ou ``` 'domoticz' => 1,```.
 
 Editer le fichier ```/var/www/iss-domo/app/config/xbmc.php```
 
