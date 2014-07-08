@@ -24,7 +24,7 @@ class DomoticzController extends BaseController
 
 	public function getxbmcmovies()
 	{
-		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_movies') == 1){
+		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_movies') == 1 AND Config::get('xbmc.xbmc_status') == 1){
 		$client = $this->getClient()->getClient();
 		$request = $client->createRequest('GET', Config::get('xbmc.xbmc_url'));
 		$q = $request->getQuery();
@@ -42,7 +42,7 @@ class DomoticzController extends BaseController
 	
 	public function getxbmcsongs()
 	{
-		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_songs') == 1){
+		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_songs') == 1 AND Config::get('xbmc.xbmc_status') == 1){
 		$client = $this->getClient()->getClient();
 		$request = $client->createRequest('GET', Config::get('xbmc.xbmc_url'));
 		$q = $request->getQuery();
@@ -60,7 +60,7 @@ class DomoticzController extends BaseController
 	
 	/**public function getxbmcplaying()
 	{
-		if(Config::get('hardware.xbmc') == 1){
+		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_status') == 1){
 		$client = $this->getClient()->getClient();
 		$request = $client->createRequest('GET', Config::get('xbmc.xbmc_url'));
 		$q = $request->getQuery();
@@ -207,6 +207,10 @@ class DomoticzController extends BaseController
 		// file_put_contents('/var/www/laravel/export.log', $deviceId.'-'.$actionName.'-'.$actionParam."\n");
 		//*** For switchs, Dimmer, Lock ***
 		if($actionName == 'setStatus'){
+			if(strpos($deviceId, 'noroom')){
+				$arraydeviceId = explode("-", $deviceId);
+				$deviceId = $arraydeviceId[0];
+			}
 		$actionName = 'setStatus' == $actionName ? 'switchlight' : $actionName;
 		$actionParam = '0' == $actionParam ? 'Off' : 'On';
 		$client = $this->getClient();
@@ -431,12 +435,12 @@ class DomoticzController extends BaseController
 					'type' => 'DevCamera',
 					'room' => '',
 					'params' => array( array(
-						'key' => 'remotejpegurl',
+						'key' => 'localjpegurl',
 						'value' => "http://".$cam['Address'].':'.$cam['Port'].'/'.$cam['ImageURL'],
 						),
 						array(
 						'key' => 'remotemjpegurl',
-						'value' => "http://".$cam['Address'].':'.$cam['Port'].'/'.$cam['ImageURL'],
+						'value' => "http://".$cam['Address'].':'.$cam['Port'].'/'.Config::get('iss-domo.url_cam_video'),
 						),
 						array(
 						'key' => 'Login',
@@ -475,7 +479,7 @@ class DomoticzController extends BaseController
 			foreach ($devicenorooms['result'] as $dnr) {
 				$params = self::convertDeviceStatus($dnr);
 				$output->devices[] = array(
-					'id' => 'nr'.$dnr['idx'],
+					'id' => $dnr['idx'].'-noroom',
 					'name' => $dnr['Name'],
 					'type' => self::convertDeviceType($dnr),
 					'room' => '',
@@ -543,6 +547,45 @@ class DomoticzController extends BaseController
 						),
 						),
 					);
+				//Firmware
+				$output->devices[] = array(
+					'id' => 'free5',
+					'name' => 'Freebox Firmware',
+					'type' => 'DevGenericSensor',
+					'room' => '',
+					'params' => array( array(
+						'key' => 'Value',
+						'value' => $freeserv['firmware_version'],
+						'unit' => '',
+						),
+						),
+					);
+				//Authentification
+				$output->devices[] = array(
+					'id' => 'free6',
+					'name' => 'Freebox is on Wan',
+					'type' => 'DevGenericSensor',
+					'room' => '',
+					'params' => array( array(
+						'key' => 'Value',
+						'value' => $freeserv['box_authenticated'],
+						'unit' => '',
+						),
+						),
+					);
+				//Uptime
+				$output->devices[] = array(
+					'id' => 'free7',
+					'name' => 'Freebox Uptime',
+					'type' => 'DevGenericSensor',
+					'room' => '',
+					'params' => array( array(
+						'key' => 'Value',
+						'value' => $freeserv['uptime_val'],
+						'unit' => '',
+						),
+						),
+					);
 
 			}
 		}
@@ -564,7 +607,7 @@ class DomoticzController extends BaseController
 		}
 		
 		//Add movies from XBMC
-		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_movies') == 1){
+		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_movies') == 1 AND Config::get('xbmc.xbmc_status') == 1){
 		$xbmcfilms = $this->getxbmcmovies();
 			foreach ($xbmcfilms['result']['movies'] as $xfilms) {
 				$output->devices[] = array(
@@ -579,7 +622,7 @@ class DomoticzController extends BaseController
 		}
 		
 		//Add songs from XBMC
-		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_songs') == 1){
+		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_songs') == 1 AND Config::get('xbmc.xbmc_status') == 1){
 		$xbmcmusiques = $this->getxbmcsongs();
 			foreach ($xbmcmusiques['result']['songs'] as $xmusiques) {
 				$output->devices[] = array(
@@ -594,28 +637,20 @@ class DomoticzController extends BaseController
 		}
 		
 		//Add Current Play in Xbmc
-		/**if(Config::get('hardware.xbmc') == 1){
+		/**if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_status') == 1){
 		$xbmcplaying = $this->getxbmcplaying();
 		if(isset($xbmcplaying['result'])){
 			foreach ($xbmcplaying['result'] as $playing) {
+				$params = self::convertXBMCStatus($playing);
 				$output->devices[] = array(
 					'id' => 'playing_xbmc',
-					'name' => $playing['label'],
+					'name' => 'Lecture en cours',
 					'type' => 'DevGenericSensor',
 					'room' => '999',
-					'params' => array(),
+					'params' => (null !== $params) ? $params : array(),
 					);
 
 			}
-		}
-		else{
-			$output->devices[] = array(
-					'id' => 'playing_xbmc',
-					'name' => 'Pas de lecture',
-					'type' => 'DevGenericSensor',
-					'room' => '999',
-					'params' => array(),
-					);
 		}
 		}**/
 
@@ -701,6 +736,20 @@ class DomoticzController extends BaseController
 		return $newType;
 	}
 
+/**private static function convertXBMCStatus ($playing)
+	{
+		if(isset($xbmcplaying['result'])){
+			$output = array( array(
+						'key' => 'Value',
+						'value' => $playing['label'],
+						'unit' => '',
+						));
+		}
+		else {
+			$output = null;
+		}
+	}**/
+	
 private static function convertDeviceStatus ($device)
 	{
 		switch ($device['Type']) {
@@ -847,11 +896,24 @@ private static function convertDeviceStatus ($device)
 						));
 				break;
 			case 'General':
+				switch($device['Name']) {
+					case (0 === strpos($device['Name'], 'Freebox')):
+						$dataDevice = explode(".", $device['Data']);
+						$ddDevice = $dataDevice[0];
+						$output = array( array(
+							'key' => 'Value',
+							'value' => $ddDevice,
+							'unit' => 'rpm',
+						));
+					break;
+				default:
 				$output = array( array(
 						'key' => 'Value',
 						'value' => $device['Data'],
 						'unit' => '',
 						));
+						break;
+				}
 				break;
 			case 'UV':
 				$output = array( array(
