@@ -204,9 +204,9 @@ class DomoticzController extends BaseController
 	 */
 	public function device($deviceId, $actionName, $actionParam = null)
 	{
-		// file_put_contents('/var/www/laravel/export.log', $deviceId.'-'.$actionName.'-'.$actionParam."\n");
+		 file_put_contents('/var/www/laravel/export.log', $deviceId.'-'.$actionName.'-'.$actionParam."\n");
 		//*** For switchs, Dimmer, Lock ***
-		if($actionName == 'setStatus'){
+		if($actionName == 'setStatus' OR $actionName == 'pulseShutter'){
 			if(strpos($deviceId, 'noroom')){
 				$arraydeviceId = explode("-", $deviceId);
 				$deviceId = $arraydeviceId[0];
@@ -223,6 +223,58 @@ class DomoticzController extends BaseController
 
 		return Response::json($output);
 		}
+		
+		//*** For Dimmer, Blinds ***
+		if($actionName == 'setLevel'){
+			if(strpos($deviceId, 'noroom')){
+				$arraydeviceId = explode("-", $deviceId);
+				$deviceId = $arraydeviceId[0];
+			}
+		$actionName = 'setLevel' == $actionName ? 'switchlight' : $actionName;
+		$actionParam = '0' == $actionParam ? 'On' : 'Off';
+		$client = $this->getClient();
+		$request = $client->getClient()->createRequest('GET', get_url(Config::get('iss-domo.domoticz_url'), "json.htm?type=command&param={$actionName}&idx={$deviceId}}&switchcmd=$actionParam"));
+		$response = $request->send();
+		$input = $response->json();
+
+		// convert to app format
+		$output = array('success' => ('OK' === $input['status'] ? true : false), 'errormsg' => ('ERR' === $input['status'] ? 'An error occured' : ''));
+
+		return Response::json($output);
+		}
+		
+		//*** For Scenes in Rooms***
+		if($actionName == 'launchScene' AND is_numeric($deviceId)){
+		$actionName = 'launchScene' == $actionName ? 'switchscene' : $actionName;
+		$actionParam = '0' == $actionParam ? 'Off' : 'On';
+		$client = $this->getClient();
+		$request = $client->getClient()->createRequest('GET', get_url(Config::get('iss-domo.domoticz_url'), "json.htm?type=command&param={$actionName}&idx={$deviceId}}&switchcmd=$actionParam"));
+		$response = $request->send();
+		$input = $response->json();
+
+		// convert to app format
+		$output = array('success' => ('OK' === $input['status'] ? true : false), 'errormsg' => ('ERR' === $input['status'] ? 'An error occured' : ''));
+
+		return Response::json($output);
+		}	
+		
+		//*** For Scenes in No Rooms***
+		if($actionName == 'launchScene' AND strpos($deviceId, 'noroom')){
+				$arraydeviceId = explode("-", $deviceId);
+				$deviceId = $arraydeviceId[0];
+		$actionName = 'launchScene' == $actionName ? 'switchscene' : $actionName;
+		$actionParam = '0' == $actionParam ? 'Off' : 'On';
+		$client = $this->getClient();
+		$request = $client->getClient()->createRequest('GET', get_url(Config::get('iss-domo.domoticz_url'), "json.htm?type=command&param={$actionName}&idx={$deviceId}}&switchcmd=$actionParam"));
+		$response = $request->send();
+		$input = $response->json();
+
+		// convert to app format
+		$output = array('success' => ('OK' === $input['status'] ? true : false), 'errormsg' => ('ERR' === $input['status'] ? 'An error occured' : ''));
+
+		return Response::json($output);
+		}
+		
 		
 		//*** For MOVIES from XBMC ***
 		// Launch Movie to XBMC where type command launchScene
@@ -840,7 +892,7 @@ private static function convertDeviceStatus ($device)
 					case 'Blinds Inverted':
 						$output = array( array(
 							'key' => 'Level',
-							'value' => $device['Level'],
+							'value' => 'Closed' == $device['Status'] ? '0' : '100',
 						),
 						array(
 							'key' => 'stopable',
@@ -854,7 +906,7 @@ private static function convertDeviceStatus ($device)
 					case 'Blinds':
 						$output = array( array(
 							'key' => 'Level',
-							'value' => $device['Level'],
+							'value' => 'Closed' == $device['Status'] ? '0' : '100',
 						),
 						array(
 							'key' => 'stopable',
@@ -868,7 +920,7 @@ private static function convertDeviceStatus ($device)
 					case 'Blinds Percentage':
 						$output = array( array(
 							'key' => 'Level',
-							'value' => $device['Level'],
+							'value' => 'Closed' == $device['Status'] ? '0' : '100',
 						),
 						array(
 							'key' => 'stopable',
@@ -883,7 +935,7 @@ private static function convertDeviceStatus ($device)
 					case 'Dimmer':
 						$output = array( array(
 							'key' => 'Level',
-							'value' => $device['Level'],
+							'value' => 'Off' == $device['Status'] ? '0' : '100',
 						),
 						array(
 							'key' => 'Status',
