@@ -728,6 +728,16 @@ class DomoticzController extends BaseController
 			case 'Current/Energy':
 				$newType = 'DevElectricity';
 				break;
+			case 'Security';
+				switch($device['SwitchType']) {
+					case 'Smoke Detector':
+						$newType = 'DevSmoke';
+						break;
+					default:
+						$newType = 'DevGenericSensor';
+						break;
+				}
+				break;
 			default:
 				$newType = 'DevGenericSensor';
 				break;
@@ -966,6 +976,31 @@ private static function convertDeviceStatus ($device)
 						'value' => $device['Data'],
 						'unit' => '',
 						));
+				break;
+			case 'Security';
+				switch($device['SwitchType']) {
+					case 'Smoke Detector':
+						$output = array( array(
+							'key' => 'Tripped',
+							'value' => 'Normal' == $device['Status'] ? '0' : '1',
+						),
+						array(
+							'key' => 'Armed',
+							'value' => '1',
+						),
+						array(
+							'key' => 'Ackable',
+							'value' => '1',
+						),
+						array(
+							'key' => 'Armable',
+							'value' => '1',
+						));
+						break;
+					default:
+						$output = null;
+						break;
+				}
 				break;
 			default:
 					$output = null;
