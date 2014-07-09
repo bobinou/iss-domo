@@ -3,6 +3,7 @@ ISS-DOMO
 
 Convert ISS Imperihome to Domoticz / Freebox Player / Freebox Server / XBMC / NAS from Freebox Player
 
+Community for users here : https://plus.google.com/communities/113236981415459933411
 
 ---
 ---
