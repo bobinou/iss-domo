@@ -22,6 +22,65 @@ class DomoticzController extends BaseController
 		));
 	}
 
+	public function getjeedomroom()
+	{
+		include 'jsonrpcClient.class.php';
+		
+		$jeedomroom = array();
+
+		$jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'), Config::get('jeedom.api_key'));
+
+		if($jsonrpc->sendRequest('object::all', array()))
+		{
+			$jeedomroom['result'] = $jsonrpc->getResult();
+			//return Response::json($jsonrpc->getResult());
+			//return Response::json($jeedomroom);
+			return $jeedomroom;
+		}
+		else
+		{
+		   echo $jsonrpc->getError();
+		}
+	}
+	
+	public function getjeedomdevice()
+	{
+		include 'jsonrpcClient.class.php';
+		
+		$jeedomroom = array();
+
+		$jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'), Config::get('jeedom.api_key'));
+
+		if($jsonrpc->sendRequest('eqLogic::all', array()))
+		{
+			$jeedomroom['result'] = $jsonrpc->getResult();
+			return $jeedomroom;
+		}
+		else
+		{
+		   echo $jsonrpc->getError();
+		}
+	}
+	
+	public function getjeedomdata()
+	{
+		include 'jsonrpcClient.class.php';
+		
+		$jeedomroom = array();
+
+		$jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'), Config::get('jeedom.api_key'));
+
+		if($jsonrpc->sendRequest('cmd::all', array()))
+		{
+			$jeedomroom['result'] = $jsonrpc->getResult();
+			return $jeedomroom;
+		}
+		else
+		{
+		   echo $jsonrpc->getError();
+		}
+	}
+	
 	public function getxbmcmovies()
 	{
 		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_movies') == 1 AND Config::get('xbmc.xbmc_status') == 1){
@@ -157,6 +216,18 @@ class DomoticzController extends BaseController
 		// convert to app format
 		$output = new stdClass();
 		$output->rooms = array();
+		
+		if(Config::get('hardware.jeedom') == 1){
+		$input = $this->getjeedomroom();
+			if(isset($input['result'])){
+				foreach ($input['result'] as $jeedomrooms) {
+				$output->rooms[] = array (
+				'id' => $jeedomrooms['id'],
+				'name' => $jeedomrooms['name'],
+				);
+				}	
+			}
+		}
 		
 		if(Config::get('hardware.domoticz') == 1){
 		$input = $this->getroom();
@@ -453,6 +524,21 @@ class DomoticzController extends BaseController
 		$output = new stdClass();
 		$output->devices = array();
 		
+		if(Config::get('hardware.jeedom') == 1){
+		$input = $this->getjeedomdevice();
+		if(isset($input['result'])){
+			foreach ($input['result'] as $device) {
+				$output->devices[] = array (
+						'id' => $device['id'],
+						'name' => $device['name'],
+						'type' => self::convertJeedomDeviceStatus($device),
+						'room' => $device['object_id'],
+						'params' => array(),
+						);
+			}
+		}
+		}
+		
 		if(Config::get('hardware.domoticz') == 1){
 		$input = $this->getroom();
 		if(isset($input['result'])){
@@ -710,6 +796,44 @@ class DomoticzController extends BaseController
 
 	}
 
+	private static function convertJeedomDeviceStatus ($device)
+	{
+		switch ($device['category']) {
+			case (array(
+				'heating' => 1,
+				'security' => 0,
+				'energy' => 0,
+				'light' => 0,
+				'automatism' => 0,
+				)):
+				$newType = 'DevTemperature';
+				break;
+			case (array(
+				'heating' => 0,
+				'security' => 0,
+				'energy' => 0,
+				'light' => 1,
+				'automatism' => 0,
+				)):
+				$newType = 'DevSwitch';
+				break;
+			case (array(
+				'heating' => 0,
+				'security' => 0,
+				'energy' => 1,
+				'light' => 0,
+				'automatism' => 0,
+				)):
+				$newType = 'DevElectricity';
+				break;
+			default:
+				$newType = 'DevGenericSensor';
+				break;
+		}
+		return $newType;
+	
+	}
+	
 	/**
 	 *
 	 * Available values: DevSwitch/DevDimmer/DevCamera/etc...
