@@ -10,3 +10,6 @@ Route::get('movies', 'DomoticzController@getmovies');
 Route::get('freebox', 'DomoticzController@getfreebox');
 Route::get('xbmcmovies', 'DomoticzController@getxbmcmovies');
 Route::get('xbmcsongs', 'DomoticzController@getxbmcsongs');
+Route::get('jeedomroom', 'DomoticzController@getjeedomroom');
+Route::get('jeedomdevice', 'DomoticzController@getjeedomdevice');
+Route::get('jeedomdata', 'DomoticzController@getjeedomdata');
