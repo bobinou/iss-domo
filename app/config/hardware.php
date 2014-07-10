@@ -11,5 +11,6 @@ return array(
 	'freebox_server' => 0,
 	'xbmc' => 0,
 	'nas' => 0,
+	'jeedom' => 0,
 
 );
