@@ -275,7 +275,7 @@ class DomoticzController extends BaseController
 	 */
 	public function device($deviceId, $actionName, $actionParam = null)
 	{
-		 file_put_contents('/var/www/laravel/export.log', $deviceId.'-'.$actionName.'-'.$actionParam."\n");
+		 //file_put_contents('/var/www/laravel/export.log', $deviceId.'-'.$actionName.'-'.$actionParam."\n");
 		//*** For switchs, Dimmer, Lock ***
 		if($actionName == 'setStatus' OR $actionName == 'pulseShutter'){
 			if(strpos($deviceId, 'noroom')){
