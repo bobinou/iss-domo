@@ -551,14 +551,96 @@ class DomoticzController extends BaseController
 				foreach ($devices['result'] as $device) {
 
 					$params = self::convertDeviceStatus($device);
-					$output->devices[] = array (
-						'id' => $device['idx'],
-						'name' => $device['Name'],
-						'type' => self::convertDeviceType($device),
-						'room' => $rooms['idx'],
-						//'params' => (null !== $params) ? array($params) : array(),
-						'params' => (null !== $params) ? $params : array(),
-						);
+					switch($device['Type']) {
+						case 'Temp':
+							$output->devices[] = array(
+										'id' => $device['idx'].'-temp',
+										'name' => $device['Name'],
+										'type' => 'DevTemperature',
+										'room' => $rooms['idx'],
+										'params' => array( array(
+											'key' => 'Value',
+											'value' => $device['Temp'],
+											'unit' => '°C',
+											),
+											),
+										);
+						break;
+						case 'Temp + Humidity':
+								$output->devices[] = array(
+										'id' => $device['idx'].'-temp',
+										'name' => $device['Name'],
+										'type' => 'DevTemperature',
+										'room' => $rooms['idx'],
+										'params' => array( array(
+											'key' => 'Value',
+											'value' => $device['Temp'],
+											'unit' => '°C',
+											),
+											),
+										);
+								$output->devices[] = array(
+										'id' => $device['idx'].'-hum',
+										'name' => $device['Name'],
+										'type' => 'DevHygrometry',
+										'room' => $rooms['idx'],
+										'params' => array( array(
+											'key' => 'Value',
+											'value' => $device['Humidity'],
+											'unit' => '%',
+											),
+											),
+										);
+						break;
+						case 'Temp + Humidity + Baro':
+								$output->devices[] = array(
+										'id' => $device['idx'].'-temp',
+										'name' => $device['Name'],
+										'type' => 'DevTemperature',
+										'room' => $rooms['idx'],
+										'params' => array( array(
+											'key' => 'Value',
+											'value' => $device['Temp'],
+											'unit' => '°C',
+											),
+											),
+										);
+								$output->devices[] = array(
+										'id' => $device['idx'].'-hum',
+										'name' => $device['Name'],
+										'type' => 'DevHygrometry',
+										'room' => $rooms['idx'],
+										'params' => array( array(
+											'key' => 'Value',
+											'value' => $device['Humidity'],
+											'unit' => '%',
+											),
+											),
+										);
+								$output->devices[] = array(
+										'id' => $device['idx'].'-press',
+										'name' => $device['Name'],
+										'type' => 'DevPressure',
+										'room' => $rooms['idx'],
+										'params' => array( array(
+											'key' => 'Value',
+											'value' => $device['Barometer'],
+											'unit' => 'mbar',
+											),
+											),
+										);
+						
+						break;
+						default:
+								$output->devices[] = array (
+											'id' => $device['idx'],
+											'name' => $device['Name'],
+											'type' => self::convertDeviceType($device),
+											'room' => $rooms['idx'],
+											'params' => (null !== $params) ? $params : array(),
+											);
+						break;
+						}
 				}
 			}
 		}
@@ -616,16 +698,100 @@ class DomoticzController extends BaseController
 		if(isset($devicenorooms['result'])){
 			foreach ($devicenorooms['result'] as $dnr) {
 				$params = self::convertDeviceStatus($dnr);
-				$output->devices[] = array(
-					'id' => $dnr['idx'].'-noroom',
-					'name' => $dnr['Name'],
-					'type' => self::convertDeviceType($dnr),
-					'room' => '',
-					'params' => (null !== $params) ? $params : array(),
-					);
+				switch($dnr['Type']) {
+					case 'Temp':
+						$output->devices[] = array(
+									'id' => $dnr['idx'].'-temp-noroom',
+									'name' => $dnr['Name'],
+									'type' => 'DevTemperature',
+									'room' => '',
+									'params' => array( array(
+										'key' => 'Value',
+										'value' => $dnr['Temp'],
+										'unit' => '°C',
+										),
+										),
+									);
+					break;
+					case 'Temp + Humidity':
+							$output->devices[] = array(
+									'id' => $dnr['idx'].'-temp-noroom',
+									'name' => $dnr['Name'],
+									'type' => 'DevTemperature',
+									'room' => '',
+									'params' => array( array(
+										'key' => 'Value',
+										'value' => $dnr['Temp'],
+										'unit' => '°C',
+										),
+										),
+									);
+							$output->devices[] = array(
+									'id' => $dnr['idx'].'-hum-noroom',
+									'name' => $dnr['Name'],
+									'type' => 'DevHygrometry',
+									'room' => '',
+									'params' => array( array(
+										'key' => 'Value',
+										'value' => $dnr['Humidity'],
+										'unit' => '%',
+										),
+										),
+									);
+					break;
+					case 'Temp + Humidity + Baro':
+							$output->devices[] = array(
+									'id' => $dnr['idx'].'-temp-noroom',
+									'name' => $dnr['Name'],
+									'type' => 'DevTemperature',
+									'room' => '',
+									'params' => array( array(
+										'key' => 'Value',
+										'value' => $dnr['Temp'],
+										'unit' => '°C',
+										),
+										),
+									);
+							$output->devices[] = array(
+									'id' => $dnr['idx'].'-hum-noroom',
+									'name' => $dnr['Name'],
+									'type' => 'DevHygrometry',
+									'room' => '',
+									'params' => array( array(
+										'key' => 'Value',
+										'value' => $dnr['Humidity'],
+										'unit' => '%',
+										),
+										),
+									);
+							$output->devices[] = array(
+									'id' => $dnr['idx'].'-press-noroom',
+									'name' => $dnr['Name'],
+									'type' => 'DevPressure',
+									'room' => '',
+									'params' => array( array(
+										'key' => 'Value',
+										'value' => $dnr['Barometer'],
+										'unit' => 'mbar',
+										),
+										),
+									);
+					
+					break;
+					default:
+						$output->devices[] = array(
+									'id' => $dnr['idx'].'-noroom',
+									'name' => $dnr['Name'],
+									'type' => self::convertDeviceType($dnr),
+									'room' => '',
+									'params' => (null !== $params) ? $params : array(),
+									);
+					break;
+					}
 
 			}
 		}
+		
 		}
 		
 		//Add Freebox server infos
@@ -880,9 +1046,9 @@ class DomoticzController extends BaseController
 					break;
 				}
 				break;
-			case (0 === strpos($device['Type'], 'Temp')):
+			/**case (0 === strpos($device['Type'], 'Temp')):
 				$newType = 'DevTemperature';
-				break;
+				break;**/
 			case 'Wind':
 				$newType = 'DevWind';
 				break;
@@ -1074,13 +1240,13 @@ private static function convertDeviceStatus ($device)
 					);
 				}
 			break;
-			case (0 === strpos($device['Type'], 'Temp')):
+			/**case (0 === strpos($device['Type'], 'Temp')):
 				$output = array( array(
 						'key' => 'Value',
 						'value' => $device['Temp'],
 						'unit' => '°C',
 						));
-				break;
+				break;**/
 			case 'General':
 				switch($device['Name']) {
 					case (0 === strpos($device['Name'], 'Freebox')):
