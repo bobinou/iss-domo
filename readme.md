@@ -29,7 +29,7 @@ ISS-DOMO peut être installé sur le même serveur que Domoticz.
 
 ISS-Domo is install with the next command in the directory /var/www. You could install it where you want.
 
-> sudo apt-get update && sudo apt-get install php5 && sudo apt-get install php5-mcrypt && sudo apt-get install php5-curl && sudo apt-get install unzip && sudo apt-get install git-core && cd /var/www/ && sudo git clone -b beta https://github.com/bobinou/iss-domo.git && sudo chmod -R 777 /var/www/iss-domo/
+> sudo apt-get update && sudo apt-get install php5 && sudo apt-get install php5-mcrypt && sudo apt-get install php5-curl && sudo apt-get install unzip && sudo apt-get install php5-sqlite && sudo apt-get install git-core && cd /var/www/ && sudo git clone -b beta https://github.com/bobinou/iss-domo.git && sudo chmod -R 777 /var/www/iss-domo/
 
 ---
 ---
