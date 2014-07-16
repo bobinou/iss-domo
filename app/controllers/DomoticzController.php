@@ -275,7 +275,7 @@ class DomoticzController extends BaseController
 	 */
 	public function device($deviceId, $actionName, $actionParam = null)
 	{
-		 //file_put_contents('/var/www/laravel/export.log', $deviceId.'-'.$actionName.'-'.$actionParam."\n");
+		// file_put_contents('/var/www/laravel/export.log', $deviceId.'-'.$actionName.'-'.$actionParam."\n");
 		//*** For switchs, Dimmer, Lock ***
 		if($actionName == 'setStatus' OR $actionName == 'pulseShutter'){
 			if(strpos($deviceId, 'noroom')){
@@ -330,7 +330,7 @@ class DomoticzController extends BaseController
 		}	
 		
 		//*** For Scenes in No Rooms***
-		if($actionName == 'launchScene' AND strpos($deviceId, 'noroom')){
+		if($actionName == 'launchScene' AND strpos($deviceId, 'noroomscene')){
 				$arraydeviceId = explode("-", $deviceId);
 				$deviceId = $arraydeviceId[0];
 		$actionName = 'launchScene' == $actionName ? 'switchscene' : $actionName;
@@ -598,7 +598,7 @@ class DomoticzController extends BaseController
 		if(isset($scenes['result'])){
 			foreach ($scenes['result'] as $sce) {
 				$output->devices[] = array(
-					'id' => 's'.$sce['idx'],
+					'id' => $sce['idx'].'-noroomscene',
 					'name' => $sce['Name'],
 					'type' => 'DevScene',
 					'room' => '',
