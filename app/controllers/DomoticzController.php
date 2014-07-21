@@ -1070,6 +1070,9 @@ class DomoticzController extends BaseController
 			case 'Usage':
 				$newType = 'DevElectricity';
 				break;
+			case 'Lux':
+				$newType = 'DevLuminosity';
+				break;
 			case 'Current/Energy':
 				$newType = 'DevElectricity';
 				break;
@@ -1281,6 +1284,13 @@ private static function convertDeviceStatus ($device)
 						'key' => 'Value',
 						'value' => $device['UVI'],
 						'unit' => 'UVI',
+						));
+				break;
+			case 'Lux':
+				$output = array( array(
+						'key' => 'Value',
+						'value' => $device['Data'],
+						'unit' => '',
 						));
 				break;
 			case 'Rain':
