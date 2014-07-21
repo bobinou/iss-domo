@@ -1092,6 +1092,9 @@ class DomoticzController extends BaseController
 					case 'Dimmer':
 						$newType = 'DevDimmer';
 						break;
+					case 'Dusk Sensor':
+						$newType = 'DevLuminosity';
+						break;
 					default:
 						$newType = 'DevSwitch';
 					break;
@@ -1281,6 +1284,12 @@ private static function convertDeviceStatus ($device)
 						array(
 							'key' => 'Status',
 							'value' => 'Off' == $device['Status'] ? '0' : '1',
+						));
+					break;
+					case 'Dusk Sensor':
+						$output = array( array(
+							'key' => 'Value',
+							'value' => $device['Data'],
 						));
 					break;
 					default:
