@@ -1368,21 +1368,11 @@ private static function convertDeviceStatus ($device)
 						'key' => 'Watts',
 						'value' => $device['Data'],
 						'unit' => '',
-						),
-						array(
-						'key' => 'ConsoTotal',
-						'value' => $device['Data'],
-						'unit' => '',
 						));
 				break;
 			case 'Current/Energy':
 				$output = 	array( array(
 						'key' => 'Watts',
-						'value' => $device['Data'],
-						'unit' => '',
-						),
-						array(
-						'key' => 'ConsoTotal',
 						'value' => $device['Data'],
 						'unit' => '',
 						));
