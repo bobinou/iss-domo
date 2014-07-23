@@ -1338,10 +1338,12 @@ private static function convertDeviceStatus ($device)
 						));
 				break;
 			case 'Lux':
+				$words = preg_split('/\s+/', $device['Data']);
+				$data = $words[0];
 				$output = array( array(
 						'key' => 'Value',
-						'value' => $device['Data'],
-						'unit' => '',
+						'value' => $data,
+						'unit' => 'lux',
 						));
 				break;
 			case 'Rain':
@@ -1364,29 +1366,47 @@ private static function convertDeviceStatus ($device)
 						));
 				break;
 			case 'Usage':
+				$words = preg_split('/\s+/', $device['Data']);
+				$data = $words[0];
 				$output = 	array( array(
 						'key' => 'Watts',
-						'value' => $device['Data'],
-						'unit' => '',
-						));
-				break;
-			case 'Current/Energy':
-				$output = 	array( array(
-						'key' => 'Watts',
-						'value' => $device['Data'],
-						'unit' => '',
-						));
-				break;
-			case 'Energy':
-				$output = 	array( array(
-						'key' => 'Watts',
-						'value' => $device['Usage'],
-						'unit' => '',
+						'value' => $data,
+						'unit' => 'Watt',
 						),
 						array(
 						'key' => 'ConsoTotal',
-						'value' => $device['Data'],
-						'unit' => '',
+						'value' => $data,
+						'unit' => 'kWh',
+						));
+				break;
+			case 'Current/Energy':
+				$words = preg_split('/\s+/', $device['Data']);
+				$data = $words[0];
+				$output = 	array( array(
+						'key' => 'Watts',
+						'value' => $data,
+						'unit' => 'Watt',
+						),
+						array(
+						'key' => 'ConsoTotal',
+						'value' => $data,
+						'unit' => 'kWh',
+						));
+				break;
+			case 'Energy':
+				$wordsUsage = preg_split('/\s+/', $device['Usage']);
+				$dataUsage = $wordsUsage[0];
+				$wordsData = preg_split('/\s+/', $device['Usage']);
+				$dataData = $wordsData[0];
+				$output = 	array( array(
+						'key' => 'Watts',
+						'value' => $dataUsage,
+						'unit' => 'Watt',
+						),
+						array(
+						'key' => 'ConsoTotal',
+						'value' => $dataData,
+						'unit' => 'kWh',
 						));
 				break;
 			case 'Security';
