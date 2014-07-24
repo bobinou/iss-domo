@@ -1345,7 +1345,23 @@ private static function convertDeviceStatus ($device)
 			case 'Energy':
 				$wordsUsage = preg_split('/\s+/', $device['Usage']);
 				$dataUsage = $wordsUsage[0];
-				$wordsData = preg_split('/\s+/', $device['Usage']);
+				$wordsData = preg_split('/\s+/', $device['Data']);
+				$dataData = $wordsData[0];
+				$output = 	array( array(
+						'key' => 'Watts',
+						'value' => $dataUsage,
+						'unit' => 'Watt',
+						),
+						array(
+						'key' => 'ConsoTotal',
+						'value' => $dataData,
+						'unit' => 'kWh',
+						));
+				break;
+			case 'P1 Smart Meter':
+				$wordsUsage = preg_split('/\s+/', $device['Usage']);
+				$dataUsage = $wordsUsage[0];
+				$wordsData = preg_split('/\s+/', $device['CounterToday']);
 				$dataData = $wordsData[0];
 				$output = 	array( array(
 						'key' => 'Watts',
