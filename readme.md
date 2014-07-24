@@ -78,7 +78,7 @@ Editer le fichier ```/var/www/iss-domo/app/config/hardware.php```
 
 > sudo nano /var/www/iss-domo/app/config/hardware.php
 
-Activer la gestion de la Freebox Server en indiquant ``` 'domoticz' => 1,```.
+Activer la gestion de Domoticz en indiquant ``` 'domoticz' => 1,```.
 
 Editer le fichier ```/var/www/iss-domo/app/config/iss-domo.php```
 
@@ -136,7 +136,7 @@ Editer le fichier ```/var/www/iss-domo/app/config/hardware.php```
 
 Activer la gestion de la Freebox Server en indiquant ``` 'freebox_server' => 1,```.
 
-Désactiver la gestion de Domoticz en indiquant ``` 'domoticz' => 1,```.
+Activer la gestion de Domoticz en indiquant ``` 'domoticz' => 1,```.
 
 Supprimer le fichier ```/var/www/iss-domo/app/storage/freebox/token```
 
@@ -238,6 +238,25 @@ Indiquer ensuite si vous souhaitez utiliser la médiathèque de films et/ou de m
   ``` ''xbmc_movies' => 1   ```
   ```	'xbmc_songs' => 1   ```
 
+---
+---
+12.PARAMETRAGE de ISS-DOMO pour Jeedom (AVEC ou SANS Domoticz)
+
+Editer le fichier ```/var/www/iss-domo/app/config/hardware.php```
+
+> sudo nano /var/www/iss-domo/app/config/hardware.php
+
+Activer la gestion de Jeedom en indiquant ``` 'jeedom' => 1,```.
+
+Editer le fichier ```/var/www/iss-domo/app/config/jeedom.php```
+
+> sudo nano /var/www/iss-domo/app/config/iss-domo.php
+
+Modifier la ligne : ```jeedom_url``` afin d'indiquer l'url d'accès à votre serveur Jeedom.
+
+Si Jeedom est installé sur le même serveur, indiquer par exemple : ```http://localhost/jeedom/core/api/jeeApi.php```
+
+Modifier la ligne : ```api_key``` afin d'indiquer la clé API à votre serveur Jeedom (à retrouver depuis Jeedom dans le module Administration).
 
 ### License
 
