@@ -22,9 +22,13 @@ class DomoticzController extends BaseController
 		));
 	}
 
+	/**
+	* Get Jeedom data.
+	* @return string Json formatted system informations.
+	*/
 	public function getjeedomroom()
 	{
-		include 'jsonrpcClient.class.php';
+		include_once 'jsonrpcClient.class.php';
 		
 		$jeedomroom = array();
 
@@ -45,7 +49,7 @@ class DomoticzController extends BaseController
 	
 	public function getjeedomdevice()
 	{
-		include 'jsonrpcClient.class.php';
+		include_once 'jsonrpcClient.class.php';
 		
 		$jeedomroom = array();
 
@@ -64,7 +68,7 @@ class DomoticzController extends BaseController
 	
 	public function getjeedomdata()
 	{
-		include 'jsonrpcClient.class.php';
+		include_once 'jsonrpcClient.class.php';
 		
 		$jeedomroom = array();
 
@@ -81,6 +85,29 @@ class DomoticzController extends BaseController
 		}
 	}
 	
+	public function getjeedomdataB($jeedomdataid)
+	{
+		include_once 'jsonrpcClient.class.php';
+		
+		$jeedomroom = array();
+
+		$jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'), Config::get('jeedom.api_key'));
+
+		if($jsonrpc->sendRequest('cmd::execCmd', array('id' => $jeedomdataid)))
+		{
+			$jeedomroom = $jsonrpc->getResult();
+			return $jeedomroom;
+		}
+		else
+		{
+		   echo $jsonrpc->getError();
+		}
+	}
+	
+	/**
+	* Get XBMC data.
+	* @return string Json formatted system informations.
+	*/
 	public function getxbmcmovies()
 	{
 		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_movies') == 1 AND Config::get('xbmc.xbmc_status') == 1){
@@ -117,24 +144,10 @@ class DomoticzController extends BaseController
 		}
 	}
 	
-	/**public function getxbmcplaying()
-	{
-		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_status') == 1){
-		$client = $this->getClient()->getClient();
-		$request = $client->createRequest('GET', Config::get('xbmc.xbmc_url'));
-		$q = $request->getQuery();
-
-		$params = Config::get('xbmc.what_is_playing');
-
-		foreach ($params as $k => $v) {
-			$q->set($k, $v);
-		}
-
-		$response = $request->send();
-		return $response->json();
-		}
-	}**/
-
+	/**
+	* Get NAS data.
+	* @return string Json formatted system informations.
+	*/
 	public function getMovies()
 	{
 		if(Config::get('hardware.nas') == 1){
@@ -155,6 +168,10 @@ class DomoticzController extends BaseController
 		}
 	}
 
+	/**
+	* Get Freebox data.
+	* @return string Json formatted system informations.
+	*/
 	public function getfreebox()
 	{
 		$data = array();
@@ -163,10 +180,13 @@ class DomoticzController extends BaseController
 			$data['config'] = $api->config();
 		}
 
-		//return Response::json($data);
 		return $data;
 	}
 
+	/**
+	* Get Domoticz data.
+	* @return string Json formatted system informations.
+	*/
 	public function getroom()
 	{
 		$client = $this->getClient();
@@ -217,6 +237,7 @@ class DomoticzController extends BaseController
 		$output = new stdClass();
 		$output->rooms = array();
 		
+		// For Jeedom Rooms
 		if(Config::get('hardware.jeedom') == 1){
 		$input = $this->getjeedomroom();
 			if(isset($input['result'])){
@@ -229,6 +250,7 @@ class DomoticzController extends BaseController
 			}
 		}
 		
+		// For Domoticz Rooms
 		if(Config::get('hardware.domoticz') == 1){
 		$input = $this->getroom();
 		if(isset($input['result'])){
@@ -249,7 +271,7 @@ class DomoticzController extends BaseController
 		}
 		}
 		
-		// Add Movies Rooms
+		// Add Movies Rooms for XBMC
 		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_movies') == 1){
 		$output->rooms[] = array (
 				'id' => '999',
@@ -257,7 +279,7 @@ class DomoticzController extends BaseController
 				);
 		}
 		
-		// Add Songs Rooms
+		// Add Songs Rooms for XBMC
 		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_songs') == 1){
 		$output->rooms[] = array (
 				'id' => '998',
@@ -545,21 +567,37 @@ class DomoticzController extends BaseController
 		$output = new stdClass();
 		$output->devices = array();
 		
+		//Device for Jeedom
 		if(Config::get('hardware.jeedom') == 1){
 		$input = $this->getjeedomdevice();
 		if(isset($input['result'])){
 			foreach ($input['result'] as $device) {
-				$output->devices[] = array (
-						'id' => $device['id'],
-						'name' => $device['name'],
-						'type' => self::convertJeedomDeviceStatus($device),
-						'room' => $device['object_id'],
-						'params' => array(),
-						);
+			
+				$datas = $this->getjeedomdata();
+				
+				if(isset($datas['result'])){
+					foreach ($datas['result'] as $datadevice) {
+						if($device['id'] == $datadevice['eqLogic_id']){
+						
+							$datasB = $this->getjeedomdataB($datadevice['id']);
+							$params = self::convertJeedomDeviceStatus($datadevice,$datasB);
+							
+									$output->devices[] = array (
+											'id' => $datadevice['id'],
+											'name' => $device['name'].'-'.$datadevice['name'],
+											'type' => self::convertJeedomDeviceType($datadevice),
+											'room' => $device['object_id'],
+											'params' => (null !== $params) ? $params : array()
+											);
+						}
+						
+					}
+				}
 			}
 		}
 		}
 		
+		// Device for Domoticz
 		if(Config::get('hardware.domoticz') == 1){
 		$input = $this->getroom();
 		if(isset($input['result'])){
@@ -990,71 +1028,141 @@ class DomoticzController extends BaseController
 
 			}
 		}
-		
-		//Add Current Play in Xbmc
-		/**if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_status') == 1){
-		$xbmcplaying = $this->getxbmcplaying();
-		if(isset($xbmcplaying['result'])){
-			foreach ($xbmcplaying['result'] as $playing) {
-				$params = self::convertXBMCStatus($playing);
-				$output->devices[] = array(
-					'id' => 'playing_xbmc',
-					'name' => 'Lecture en cours',
-					'type' => 'DevGenericSensor',
-					'room' => '999',
-					'params' => (null !== $params) ? $params : array(),
-					);
-
-			}
-		}
-		}**/
 
 		return Response::json($output);
 
 	}
 
-	private static function convertJeedomDeviceStatus ($device)
+	/**
+	 * Device type for Jeedom
+	 */
+	private static function convertJeedomDeviceType ($datadevice)
 	{
-		switch ($device['category']) {
-			case (array(
-				'heating' => 1,
-				'security' => 0,
-				'energy' => 0,
-				'light' => 0,
-				'automatism' => 0,
-				)):
-				$newType = 'DevTemperature';
-				break;
-			case (array(
-				'heating' => 0,
-				'security' => 0,
-				'energy' => 0,
-				'light' => 1,
-				'automatism' => 0,
-				)):
-				$newType = 'DevSwitch';
-				break;
-			case (array(
-				'heating' => 0,
-				'security' => 0,
-				'energy' => 1,
-				'light' => 0,
-				'automatism' => 0,
-				)):
-				$newType = 'DevElectricity';
-				break;
-			default:
-				$newType = 'DevGenericSensor';
-				break;
-		}
-		return $newType;
+	switch ($datadevice['type']) {
+		case 'info':
+			switch ($datadevice['subType']) {
+				case 'binary':
+					$newType = 'DevSwitch';
+					break;
+				case 'numeric':
+					switch ($datadevice['unite']) {
+						case '°C':
+							$newType = 'DevTemperature';
+							break;
+						case '%':
+							$newType = 'DevHygrometry';
+							break;
+						case 'Pa':
+							$newType = 'DevPressure';
+							break;
+						case 'km/h':
+							$newType = 'DevWind';
+							break;
+						case 'W':
+							$newType = 'DevElectricity';
+							break;
+						default:
+							$newType = 'DevGenericSensor';
+							break;
+					}
+					break;
+				default:
+					$newType = 'DevGenericSensor';
+					break;
+			}
+		break;
+		default:
+			$newType = 'DevGenericSensor';
+			break;
+	}
+	return $newType;
 	
 	}
 	
 	/**
-	 *
-	 * Available values: DevSwitch/DevDimmer/DevCamera/etc...
-	 *
+	 * Param for Jeedom
+	 */
+	private static function convertJeedomDeviceStatus ($datadevice,$datasB)
+	{
+	switch ($datadevice['type']) {
+		case 'info':
+			switch ($datadevice['subType']) {
+				case 'binary':
+					$newType = array( array(
+							'key' => 'Status',
+							'value' => $datasB,
+						));
+					break;
+				case 'numeric':
+					switch ($datadevice['unite']) {
+						case '°C':
+							$newType = array( array(
+										'key' => 'Value',
+										'value' => $datasB,
+										'unit' => '°C',
+										));
+							break;
+						case '%':
+							$newType = array( array(
+										'key' => 'Value',
+										'value' => $datasB,
+										'unit' => '%',
+										));
+							break;
+						case 'Pa':
+							$newType = array( array(
+											'key' => 'Value',
+											'value' => $datasB,
+											'unit' => 'mbar',
+											));
+							break;
+						case 'km/h':
+							$newType = array( array(
+											'key' => 'Speed',
+											'value' => $datasB,
+											'unit' => 'km/h',
+											));
+							break;
+						case 'W':
+							$newType = array( array(
+											'key' => 'Watts',
+											'value' => $datasB,
+											'unit' => 'Watt',
+											),
+											array(
+											'key' => 'ConsoTotal',
+											'value' => $datasB,
+											'unit' => 'kWh',
+											));
+							break;
+						default:
+							$newType = array( array(
+											'key' => 'Value',
+											'value' => $datasB,
+											'unit' => '',
+											));
+							break;
+					}
+					break;
+				default:
+					$newType = array( array(
+											'key' => 'Value',
+											'value' => $datasB,
+											'unit' => '',
+											));
+					break;
+			}
+		break;
+		default:
+			$newType = null;
+			break;
+	}
+	return $newType;
+	
+	}
+	
+	/**
+	 * Device type for Domoticz
 	 */
 	private static function convertDeviceType ($device)
 	{
@@ -1100,9 +1208,6 @@ class DomoticzController extends BaseController
 					break;
 				}
 				break;
-			/**case (0 === strpos($device['Type'], 'Temp')):
-				$newType = 'DevTemperature';
-				break;**/
 			case 'Wind':
 				$newType = 'DevWind';
 				break;
@@ -1145,20 +1250,9 @@ class DomoticzController extends BaseController
 		return $newType;
 	}
 
-/**private static function convertXBMCStatus ($playing)
-	{
-		if(isset($xbmcplaying['result'])){
-			$output = array( array(
-						'key' => 'Value',
-						'value' => $playing['label'],
-						'unit' => '',
-						));
-		}
-		else {
-			$output = null;
-		}
-	}**/
-	
+	/**
+	 * Device Status for Domoticz
+	 */	
 private static function convertDeviceStatus ($device)
 	{
 		switch ($device['Type']) {
@@ -1303,13 +1397,6 @@ private static function convertDeviceStatus ($device)
 					);
 				}
 			break;
-			/**case (0 === strpos($device['Type'], 'Temp')):
-				$output = array( array(
-						'key' => 'Value',
-						'value' => $device['Temp'],
-						'unit' => '°C',
-						));
-				break;**/
 			case 'General':
 				switch($device['Name']) {
 					case (0 === strpos($device['Name'], 'Freebox')):
@@ -1456,4 +1543,3 @@ private static function convertDeviceStatus ($device)
 		return self::$client;
 	}
 }
-			//var_dump($device); die;
