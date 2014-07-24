@@ -76,7 +76,7 @@ Editer le fichier ```/var/www/iss-domo/app/config/hardware.php```
 
 > sudo nano /var/www/iss-domo/app/config/hardware.php
 
-Activer la gestion de la Freebox Server en indiquant ``` 'domoticz' => 1,```.
+Activer la gestion de Domoticz en indiquant ``` 'domoticz' => 1,```.
 
 Editer le fichier ```/var/www/iss-domo/app/config/iss-domo.php```
 
@@ -134,7 +134,7 @@ Editer le fichier ```/var/www/iss-domo/app/config/hardware.php```
 
 Activer la gestion de la Freebox Server en indiquant ``` 'freebox_server' => 1,```.
 
-Désactiver la gestion de Domoticz en indiquant ``` 'domoticz' => 1,```.
+Activer la gestion de Domoticz en indiquant ``` 'domoticz' => 1,```.
 
 Supprimer le fichier ```/var/www/iss-domo/app/storage/freebox/token```
 
