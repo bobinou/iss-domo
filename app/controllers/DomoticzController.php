@@ -1067,6 +1067,9 @@ class DomoticzController extends BaseController
 			case 'Energy':
 				$newType = 'DevElectricity';
 				break;
+			case 'P1 Smart Meter':
+				$newType = 'DevElectricity';
+				break;
 			case 'Usage':
 				$newType = 'DevElectricity';
 				break;
