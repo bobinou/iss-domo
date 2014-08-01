@@ -1298,6 +1298,7 @@ private static function convertDeviceStatus ($device)
 							'key' => 'pulseable',
 							'value' => '0',
 						));
+				break;
 			case 'UV':
 				$output = array( array(
 						'key' => 'Value',
