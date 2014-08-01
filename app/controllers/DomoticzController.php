@@ -1220,6 +1220,9 @@ class DomoticzController extends BaseController
 			case 'UV':
 				$newType = 'DevUV';
 				break;
+			case 'RFY':
+				$newType = 'DevShutter';
+				break;
 			case 'Energy':
 				$newType = 'DevElectricity';
 				break;
@@ -1420,6 +1423,19 @@ private static function convertDeviceStatus ($device)
 						break;
 				}
 				break;
+			case 'RFY':
+						$output = array( array(
+							'key' => 'Level',
+							'value' => 'Closed' == $device['Status'] ? '0' : '100',
+						),
+						array(
+							'key' => 'stopable',
+							'value' => '0',
+						),
+						array(
+							'key' => 'pulseable',
+							'value' => '0',
+						));
 			case 'UV':
 				$output = array( array(
 						'key' => 'Value',
