@@ -13,3 +13,5 @@ Route::get('xbmcsongs', 'DomoticzController@getxbmcsongs');
 Route::get('jeedomroom', 'DomoticzController@getjeedomroom');
 Route::get('jeedomdevice', 'DomoticzController@getjeedomdevice');
 Route::get('jeedomdata', 'DomoticzController@getjeedomdata');
+Route::get('jeedomdatab', 'DomoticzController@getjeedomdataB');
+Route::get('devices/{deviceId}/{paramKey}/histo/{startdate}/{enddate}', 'DomoticzController@device_history');

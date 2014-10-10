@@ -1,7 +1,9 @@
-ISS-DOMO
+ISS-DOMO Beta Version
 ---
 
 Convert ISS Imperihome to Domoticz / Freebox Player / Freebox Server / XBMC / NAS from Freebox Player
+
+Beta version support history and graph to Imperihome
 
 Community for users here : https://plus.google.com/communities/113236981415459933411
 
@@ -27,7 +29,7 @@ ISS-DOMO peut être installé sur le même serveur que Domoticz.
 
 ISS-Domo is install with the next command in the directory /var/www. You could install it where you want.
 
-> sudo apt-get update && sudo apt-get install php5 && sudo apt-get install php5-mcrypt && sudo apt-get install php5-curl && sudo apt-get install unzip && sudo apt-get install git-core && cd /var/www/ && sudo git clone https://github.com/bobinou/iss-domo.git && sudo chmod -R 777 /var/www/iss-domo/
+> sudo apt-get update && sudo apt-get install php5 && sudo apt-get install php5-mcrypt && sudo apt-get install php5-curl && sudo apt-get install unzip && sudo apt-get install php5-sqlite && sudo apt-get install git-core && cd /var/www/ && sudo git clone -b beta https://github.com/bobinou/iss-domo.git && sudo chmod -R 777 /var/www/iss-domo/
 
 ---
 ---
@@ -236,6 +238,25 @@ Indiquer ensuite si vous souhaitez utiliser la médiathèque de films et/ou de m
   ``` ''xbmc_movies' => 1   ```
   ```	'xbmc_songs' => 1   ```
 
+---
+---
+12.PARAMETRAGE de ISS-DOMO pour Jeedom (AVEC ou SANS Domoticz)
+
+Editer le fichier ```/var/www/iss-domo/app/config/hardware.php```
+
+> sudo nano /var/www/iss-domo/app/config/hardware.php
+
+Activer la gestion de Jeedom en indiquant ``` 'jeedom' => 1,```.
+
+Editer le fichier ```/var/www/iss-domo/app/config/jeedom.php```
+
+> sudo nano /var/www/iss-domo/app/config/iss-domo.php
+
+Modifier la ligne : ```jeedom_url``` afin d'indiquer l'url d'accès à votre serveur Jeedom.
+
+Si Jeedom est installé sur le même serveur, indiquer par exemple : ```http://localhost/jeedom/core/api/jeeApi.php```
+
+Modifier la ligne : ```api_key``` afin d'indiquer la clé API à votre serveur Jeedom (à retrouver depuis Jeedom dans le module Administration).
 
 ### License
 
