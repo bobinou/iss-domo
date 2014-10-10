@@ -1,7 +1,7 @@
-ISS-DOMO Beta Version
+ISS-DOMO
 ---
 
-Convert ISS Imperihome to Domoticz / Freebox Player / Freebox Server / XBMC / NAS from Freebox Player
+Convert ISS Imperihome to Domoticz / Jeedom / Freebox Player / Freebox Server / XBMC / NAS from Freebox Player
 
 Beta version support history and graph to Imperihome
 
