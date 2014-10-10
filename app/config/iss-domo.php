@@ -8,5 +8,5 @@ return array(
 	
 	'domoticz_url' => 'http://localhost:8180',
 	'url_cam_video' => 'videostream.cgi',
-	'path_to_db' => '/home/pi/iss-domo-beta/app/storage/iss-domo.db',
+	'path_to_db' => '/var/www/iss-domo/app/storage/iss-domo.db',
 );
