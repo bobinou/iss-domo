@@ -3,15 +3,13 @@ ISS-DOMO
 
 Convert ISS Imperihome to Domoticz / Jeedom / Freebox Player / Freebox Server / XBMC / NAS from Freebox Player
 
-Beta version support history and graph to Imperihome
+Support history and graph to Imperihome
 
 Community for users here : https://plus.google.com/communities/113236981415459933411
 
 ---
 ---
 1.INTRODUCTION
-
-ISS-Domo permet de faire communiquer l'application Android Imperihome avec le logiciel Domoticz.
 
 ISS-Domo repose sur le framework "Laravel" https://github.com/laravel/laravel.
 
