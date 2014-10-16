@@ -798,9 +798,14 @@ class DomoticzController extends BaseController
 										'key' => 'Value',
 										'value' => $dnr['Temp'],
 										'unit' => '°C',
+										'graphable' => 'true',
 										),
 										),
 									);
+					//Add history to database
+							$db = new SQLite3(Config::get('iss-domo.path_to_db'));
+							$milliseconds = round(microtime(true) * 1000);
+							$db->exec('INSERT INTO domoticz_history (idx, key, data, date) VALUES ("'.$dnr['idx'].'-temp-noroom","value",'.$dnr['Temp'].','.$milliseconds.')');
 					break;
 					case 'Temp + Humidity':
 							$output->devices[] = array(
@@ -812,9 +817,14 @@ class DomoticzController extends BaseController
 										'key' => 'Value',
 										'value' => $dnr['Temp'],
 										'unit' => '°C',
+										'graphable' => 'true',
 										),
 										),
 									);
+								//Add history to database
+									$db = new SQLite3(Config::get('iss-domo.path_to_db'));
+									$milliseconds = round(microtime(true) * 1000);
+									$db->exec('INSERT INTO domoticz_history (idx, key, data, date) VALUES ("'.$dnr['idx'].'-temp-noroom","value",'.$dnr['Temp'].','.$milliseconds.')');
 							$output->devices[] = array(
 									'id' => $dnr['idx'].'-hum-noroom',
 									'name' => $dnr['Name'],
@@ -824,9 +834,14 @@ class DomoticzController extends BaseController
 										'key' => 'Value',
 										'value' => $dnr['Humidity'],
 										'unit' => '%',
+										'graphable' => 'true',
 										),
 										),
 									);
+					//Add history to database
+									$db = new SQLite3(Config::get('iss-domo.path_to_db'));
+									$milliseconds = round(microtime(true) * 1000);
+									$db->exec('INSERT INTO domoticz_history (idx, key, data, date) VALUES ("'.$dnr['idx'].'-hum-noroom","value",'.$dnr['Humidity'].','.$milliseconds.')');
 					break;
 					case 'Temp + Humidity + Baro':
 							$output->devices[] = array(
@@ -838,9 +853,14 @@ class DomoticzController extends BaseController
 										'key' => 'Value',
 										'value' => $dnr['Temp'],
 										'unit' => '°C',
+										'graphable' => 'true',
 										),
 										),
 									);
+									//Add history to database
+										$db = new SQLite3(Config::get('iss-domo.path_to_db'));
+										$milliseconds = round(microtime(true) * 1000);
+										$db->exec('INSERT INTO domoticz_history (idx, key, data, date) VALUES ("'.$dnr['idx'].'-temp-noroom","value",'.$dnr['Temp'].','.$milliseconds.')');
 							$output->devices[] = array(
 									'id' => $dnr['idx'].'-hum-noroom',
 									'name' => $dnr['Name'],
@@ -850,9 +870,14 @@ class DomoticzController extends BaseController
 										'key' => 'Value',
 										'value' => $dnr['Humidity'],
 										'unit' => '%',
+										'graphable' => 'true',
 										),
 										),
 									);
+									//Add history to database
+										$db = new SQLite3(Config::get('iss-domo.path_to_db'));
+										$milliseconds = round(microtime(true) * 1000);
+										$db->exec('INSERT INTO domoticz_history (idx, key, data, date) VALUES ("'.$dnr['idx'].'-hum-noroom","value",'.$dnr['Humidity'].','.$milliseconds.')');
 							$output->devices[] = array(
 									'id' => $dnr['idx'].'-press-noroom',
 									'name' => $dnr['Name'],
@@ -862,10 +887,14 @@ class DomoticzController extends BaseController
 										'key' => 'Value',
 										'value' => $dnr['Barometer'],
 										'unit' => 'mbar',
+										'graphable' => 'true',
 										),
 										),
 									);
-					
+									//Add history to database
+										$db = new SQLite3(Config::get('iss-domo.path_to_db'));
+										$milliseconds = round(microtime(true) * 1000);
+										$db->exec('INSERT INTO domoticz_history (idx, key, data, date) VALUES ("'.$dnr['idx'].'-press-noroom","value",'.$dnr['Barometer'].','.$milliseconds.')');
 					break;
 					default:
 						$output->devices[] = array(
