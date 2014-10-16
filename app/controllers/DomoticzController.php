@@ -17,7 +17,7 @@ class DomoticzController extends BaseController
 	public function system()
 	{
 		return Response::json(array (
-			'id' => 'ISS-Domo Beta v2.0.1',
+			'id' => 'ISS-Domo',
 			'apiversion' => 1,
 		));
 	}
@@ -579,8 +579,24 @@ class DomoticzController extends BaseController
 					foreach ($datas['result'] as $datadevice) {
 						if($device['id'] == $datadevice['eqLogic_id']){
 						
-							$datasB = $this->getjeedomdataB($datadevice['id']);
-							$params = self::convertJeedomDeviceStatus($datadevice,$datasB);
+							//Modif bug maison hantee...
+							switch($datadevice['subType']){
+								case 'binary':
+									$output->devices[] = array (
+											'id' => $datadevice['id'],
+											'name' => $device['name'].'-'.$datadevice['name'],
+											'type' => 'DevSwitch',
+											'room' => $device['object_id'],
+											'params' => array ( array(
+												'key' => 'Status',
+												'value' => '0',
+												),
+												),
+											);
+								break;
+								default:
+									$datasB = $this->getjeedomdataB($datadevice['id']);
+									$params = self::convertJeedomDeviceStatus($datadevice,$datasB);
 							
 									$output->devices[] = array (
 											'id' => $datadevice['id'],
@@ -589,6 +605,9 @@ class DomoticzController extends BaseController
 											'room' => $device['object_id'],
 											'params' => (null !== $params) ? $params : array()
 											);
+								break;
+							}
+						
 						}
 						
 					}
@@ -1070,9 +1089,6 @@ class DomoticzController extends BaseController
 	switch ($datadevice['type']) {
 		case 'info':
 			switch ($datadevice['subType']) {
-				case 'binary':
-					$newType = 'DevSwitch';
-					break;
 				case 'numeric':
 					switch ($datadevice['unite']) {
 						case '°C':
@@ -1116,12 +1132,6 @@ class DomoticzController extends BaseController
 	switch ($datadevice['type']) {
 		case 'info':
 			switch ($datadevice['subType']) {
-				case 'binary':
-					$newType = array( array(
-							'key' => 'Status',
-							'value' => $datasB,
-						));
-					break;
 				case 'numeric':
 					switch ($datadevice['unite']) {
 						case '°C':
