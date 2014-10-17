@@ -260,7 +260,7 @@ Modifier la ligne : ```api_key``` afin d'indiquer la clé API à votre serveur J
 
 ---
 ---
-13. Integration d'ISS-Domo a NGinx
+13.Integration d'ISS-Domo a NGinx
 
 Placer ISS-Domo dans le repertoire ```/usr/share/nginx/www/``` s'il est dans ```/var/www/```
 
