@@ -262,9 +262,13 @@ Modifier la ligne : ```api_key``` afin d'indiquer la clé API à votre serveur J
 ---
 13. Integration d'ISS-Domo a NGinx
 
-Placer ISS-Domo dans le repertoire /usr/share/nginx/www/
+Placer ISS-Domo dans le repertoire ```/usr/share/nginx/www/``` s'il est dans ```/var/www/```
+
+> sudo cp -R /var/www/iss-domo/ /usr/share/nginx/www/
 
 Donner les droits 777 au repertoire iss-domo
+
+> sudo chmod -R 777 /usr/share/nginx/www/iss-domo/
 
 Editer le fcihier  ```/etc/nginx/sites-enabled/default```
 
@@ -273,13 +277,20 @@ Editer le fcihier  ```/etc/nginx/sites-enabled/default```
 Ajouter les lignes suivantes AVANT la location /jeedom
 
 ``` location /iss-domo/public/ { ```
+
 ```            try_files $uri $uri/ @rewrite; ```
+
 ```        } ```
+
 ```        location @rewrite { ```
+
 ```                rewrite ^/(?<appname>[^/]+)/public/(?<appurl>.+)$ /$appname/public/index.php?_url=/$appurl last; ```
+
 ```        } ```
 
 Redemarrer Nginx
+
+ISS-Domo est alors accessible depuis Imperihome à l'adresse ```http://IP-server-iss-domo/iss-domo/public```
 
 ### License
 
