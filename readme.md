@@ -258,6 +258,29 @@ Si Jeedom est installé sur le même serveur, indiquer par exemple : ```http://l
 
 Modifier la ligne : ```api_key``` afin d'indiquer la clé API à votre serveur Jeedom (à retrouver depuis Jeedom dans le module Administration).
 
+---
+---
+13. Integration d'ISS-Domo a NGinx
+
+Placer ISS-Domo dans le repertoire /usr/share/nginx/www/
+
+Donner les droits 777 au repertoire iss-domo
+
+Editer le fcihier  ```/etc/nginx/sites-enabled/default```
+
+> sudo nano /etc/nginx/sites-enabled/default
+
+Ajouter les lignes suivantes AVANT la location /jeedom
+
+``` location /iss-domo/public/ { ```
+```            try_files $uri $uri/ @rewrite; ```
+```        } ```
+```        location @rewrite { ```
+```                rewrite ^/(?<appname>[^/]+)/public/(?<appurl>.+)$ /$appname/public/index.php?_url=/$appurl last; ```
+```        } ```
+
+Redemarrer Nginx
+
 ### License
 
 ISS-Domo is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT)
