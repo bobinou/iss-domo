@@ -250,7 +250,7 @@ Activer la gestion de Jeedom en indiquant ``` 'jeedom' => 1,```.
 
 Editer le fichier ```/var/www/iss-domo/app/config/jeedom.php```
 
-> sudo nano /var/www/iss-domo/app/config/iss-domo.php
+> sudo nano /var/www/iss-domo/app/config/jeedom.php
 
 Modifier la ligne : ```jeedom_url``` afin d'indiquer l'url d'accès à votre serveur Jeedom.
 
