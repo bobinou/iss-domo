@@ -14,4 +14,6 @@ Route::get('jeedomroom', 'DomoticzController@getjeedomroom');
 Route::get('jeedomdevice', 'DomoticzController@getjeedomdevice');
 Route::get('jeedomdata', 'DomoticzController@getjeedomdata');
 Route::get('jeedomdatab', 'DomoticzController@getjeedomdataB');
+Route::get('jeedomformat', 'DomoticzController@formatjeedomid');
+Route::get('jeedomtest', 'DomoticzController@jeedomtest');
 Route::get('devices/{deviceId}/{paramKey}/histo/{startdate}/{enddate}', 'DomoticzController@device_history');
