@@ -17,7 +17,7 @@ class DomoticzController extends BaseController
 	public function system()
 	{
 		return Response::json(array (
-			'id' => 'ISS-Domo Beta v2.0.3',
+			'id' => 'ISS-Domo Beta v2.0.4',
 			'apiversion' => 1,
 		));
 	}
@@ -78,6 +78,7 @@ class DomoticzController extends BaseController
 		{
 			$jeedomroom['result'] = $jsonrpc->getResult();
 			return $jeedomroom;
+			
 		}
 		else
 		{
@@ -85,10 +86,25 @@ class DomoticzController extends BaseController
 		}
 	}
 	
-	
-	public function getjeedomdataB($jeedomdataid)
+	public function formatjeedomid()
 	{
-		//$jeedomdataid = 1;
+		$output = array();
+	
+		$datas = $this->getjeedomdata();
+			if(isset($datas['result'])){
+					foreach ($datas['result'] as $datadevice) {
+						//$output[] = array ('id' => $datadevice['id']);
+						$output[] = $datadevice['id'];
+					}
+			}
+		//return Response::json($output);
+		return $output;
+	}
+	
+	public function getjeedomdataB()
+	{
+		//$jeedomdataid = array(1752,1753);
+		$jeedomdataid = $this->formatjeedomid();
 		
 		include_once 'jsonrpcClient.class.php';
 		
@@ -105,6 +121,21 @@ class DomoticzController extends BaseController
 		{
 		   echo $jsonrpc->getError();
 		}
+	}
+	
+	public function jeedomtest()
+	{
+		$output = array();
+	
+		$datas = $this->getjeedomdataB();
+			if(isset($datas['result'])){
+					foreach ($datas['result'] as $datadevice) {
+						//$output[] = array ('id' => $datadevice['id']);
+						$output[] = $datadevice['29']['value'];
+					}
+			}
+		//return Response::json($output);
+		return $output;
 	}
 	
 	/**
@@ -583,8 +614,8 @@ class DomoticzController extends BaseController
 						if($device['id'] == $datadevice['eqLogic_id']){
 						
 							//Modif bug maison hantee...
-							switch($datadevice['subType']){
-								case 'binary':
+							switch($datadevice['type']){
+								case 'action':
 									$output->devices[] = array (
 											'id' => $datadevice['id'],
 											'name' => $device['name'].'-'.$datadevice['name'],
@@ -598,10 +629,13 @@ class DomoticzController extends BaseController
 											);
 								break;
 								default:
-									$datasB = $this->getjeedomdataB($datadevice['id']);
-										if(isset($datasB['result'])){
+									//$datasB = $this->getjeedomdataB($datadevice['id']);
+									$datasB = $this->getjeedomdataB();
+									if(isset($datasB['result'])){
 										foreach ($datasB['result'] as $datadeviceB) {
-									
+											$iddd = $datadevice['id'];
+											//return $datadeviceB[$iddd]['value'];
+											
 									$params = self::convertJeedomDeviceStatus($datadevice,$datadeviceB);
 							
 									$output->devices[] = array (
@@ -612,6 +646,7 @@ class DomoticzController extends BaseController
 											'params' => (null !== $params) ? $params : array()
 											);
 								break;
+											
 										}
 									}
 							}
@@ -1137,6 +1172,8 @@ class DomoticzController extends BaseController
 	 */
 	private static function convertJeedomDeviceStatus ($datadevice,$datadeviceB)
 	{
+	$iddd = $datadevice['id'];
+
 	switch ($datadevice['type']) {
 		case 'info':
 			switch ($datadevice['subType']) {
@@ -1145,47 +1182,47 @@ class DomoticzController extends BaseController
 						case '°C':
 							$newType = array( array(
 										'key' => 'Value',
-										'value' => $datadeviceB['value'],
+										'value' => $datadeviceB[$iddd]['value'],
 										'unit' => '°C',
 										));
 							break;
 						case '%':
 							$newType = array( array(
 										'key' => 'Value',
-										'value' => $datadeviceB['value'],
+										'value' => $datadeviceB[$iddd]['value'],
 										'unit' => '%',
 										));
 							break;
 						case 'Pa':
 							$newType = array( array(
 											'key' => 'Value',
-											'value' => $datadeviceB['value'],
+											'value' => $datadeviceB[$iddd]['value'],
 											'unit' => 'mbar',
 											));
 							break;
 						case 'km/h':
 							$newType = array( array(
 											'key' => 'Speed',
-											'value' => $datadeviceB['value'],
+											'value' => $datadeviceB[$iddd]['value'],
 											'unit' => 'km/h',
 											));
 							break;
 						case 'W':
 							$newType = array( array(
 											'key' => 'Watts',
-											'value' => $datadeviceB['value'],
+											'value' => $datadeviceB[$iddd]['value'],
 											'unit' => 'Watt',
 											),
 											array(
 											'key' => 'ConsoTotal',
-											'value' => $datadeviceB['value'],
+											'value' => $datadeviceB[$iddd]['value'],
 											'unit' => 'kWh',
 											));
 							break;
 						default:
 							$newType = array( array(
 											'key' => 'Value',
-											'value' => $datadeviceB['value'],
+											'value' => $datadeviceB[$iddd]['value'],
 											'unit' => '',
 											));
 							break;
@@ -1194,7 +1231,7 @@ class DomoticzController extends BaseController
 				default:
 					$newType = array( array(
 											'key' => 'Value',
-											'value' => $datadeviceB['value'],
+											'value' => $datadeviceB[$iddd]['value'],
 											'unit' => '',
 											));
 					break;
