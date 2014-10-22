@@ -282,10 +282,10 @@ class DomoticzController extends BaseController
 							}
 						else{
 							
-							$datasB = $this->getjeedomdataB($datadevice['eqLogic_id']);
+							/**$datasB = $this->getjeedomdataB($datadevice['eqLogic_id']);
 							//$datasB = $this->getjeedomdataBnoroom();
 							if(isset($datasB['result'])){
-								foreach ($datasB['result'] as $datadeviceB) {
+								foreach ($datasB['result'] as $datadeviceB) {**/
 
 									$params = self::convertJeedomDeviceStatus($datadevice,$datadeviceB);
 						
@@ -297,8 +297,8 @@ class DomoticzController extends BaseController
 											'params' => (null !== $params) ? $params : array()
 											);
 
-								}
-							}
+								//}
+							//}
 						}
 						}
 					}
