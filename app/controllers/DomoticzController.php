@@ -17,7 +17,7 @@ class DomoticzController extends BaseController
 	public function system()
 	{
 		return Response::json(array (
-			'id' => 'ISS-Domo Beta v2.0.4',
+			'id' => 'ISS-Domo Beta v2.0.5',
 			'apiversion' => 1,
 		));
 	}
@@ -47,7 +47,7 @@ class DomoticzController extends BaseController
 		}
 	}
 	
-	public function getjeedomdevice()
+	public function getjeedomdevice($room)
 	{
 		include_once 'jsonrpcClient.class.php';
 		
@@ -55,7 +55,8 @@ class DomoticzController extends BaseController
 
 		$jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'), Config::get('jeedom.api_key'));
 
-		if($jsonrpc->sendRequest('eqLogic::all', array()))
+		//if($jsonrpc->sendRequest('eqLogic::all', array()))
+		if($jsonrpc->sendRequest('eqLogic::byObjectId', array('object_id' => $room)))
 		{
 			$jeedomroom['result'] = $jsonrpc->getResult();
 			return $jeedomroom;
@@ -66,7 +67,7 @@ class DomoticzController extends BaseController
 		}
 	}
 	
-	public function getjeedomdata()
+	public function getjeedomdata($equip)
 	{
 		include_once 'jsonrpcClient.class.php';
 		
@@ -74,7 +75,8 @@ class DomoticzController extends BaseController
 
 		$jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'), Config::get('jeedom.api_key'));
 
-		if($jsonrpc->sendRequest('cmd::all', array()))
+		//if($jsonrpc->sendRequest('cmd::all', array()))
+		if($jsonrpc->sendRequest('cmd::byEqLogicId', array('eqLogic_id' => $equip)))
 		{
 			$jeedomroom['result'] = $jsonrpc->getResult();
 			return $jeedomroom;
@@ -86,11 +88,11 @@ class DomoticzController extends BaseController
 		}
 	}
 	
-	public function formatjeedomid()
+	public function formatjeedomid($equip)
 	{
 		$output = array();
 	
-		$datas = $this->getjeedomdata();
+		$datas = $this->getjeedomdata($equip);
 			if(isset($datas['result'])){
 					foreach ($datas['result'] as $datadevice) {
 						//$output[] = array ('id' => $datadevice['id']);
@@ -101,18 +103,18 @@ class DomoticzController extends BaseController
 		return $output;
 	}
 	
-	public function getjeedomdataB()
+	public function getjeedomdataB($jeedomdataid)
 	{
 		//$jeedomdataid = array(1752,1753);
-		$jeedomdataid = $this->formatjeedomid();
+		$idd = $this->formatjeedomid($jeedomdataid);
 		
 		include_once 'jsonrpcClient.class.php';
 		
 		$jeedomroom = array();
-
+		
 		$jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'), Config::get('jeedom.api_key'));
 
-		if($jsonrpc->sendRequest('cmd::execCmd', array('id' => $jeedomdataid)))
+		if($jsonrpc->sendRequest('cmd::execCmd', array('id' => $idd)))
 		{
 			$jeedomroom['result'] = array($jsonrpc->getResult());
 			return $jeedomroom;
@@ -603,15 +605,20 @@ class DomoticzController extends BaseController
 		
 		//Device for Jeedom
 		if(Config::get('hardware.jeedom') == 1){
-		$input = $this->getjeedomdevice();
+		
+		$rooms = $this->getjeedomroom();
+		if(isset($rooms['result'])){
+			foreach ($rooms['result'] as $room) {
+		
+		$input = $this->getjeedomdevice($room['id']);
 		if(isset($input['result'])){
 			foreach ($input['result'] as $device) {
 			
-				$datas = $this->getjeedomdata();
+				$datas = $this->getjeedomdata($device['id']);
 				
 				if(isset($datas['result'])){
 					foreach ($datas['result'] as $datadevice) {
-						if($device['id'] == $datadevice['eqLogic_id']){
+						
 						
 							//Modif bug maison hantee...
 							switch($datadevice['type']){
@@ -629,12 +636,12 @@ class DomoticzController extends BaseController
 											);
 								break;
 								default:
-									//$datasB = $this->getjeedomdataB($datadevice['id']);
-									$datasB = $this->getjeedomdataB();
+									
+									$datasB = $this->getjeedomdataB($device['id']);
 									if(isset($datasB['result'])){
 										foreach ($datasB['result'] as $datadeviceB) {
 											$iddd = $datadevice['id'];
-											//return $datadeviceB[$iddd]['value'];
+											
 											
 									$params = self::convertJeedomDeviceStatus($datadevice,$datadeviceB);
 							
@@ -650,12 +657,13 @@ class DomoticzController extends BaseController
 										}
 									}
 							}
-						
-						}
+					
 						
 					}
 				}
 			}
+		}
+		}
 		}
 		}
 		
@@ -1123,7 +1131,7 @@ class DomoticzController extends BaseController
 		return Response::json($output);
 
 	}
-
+	
 	/**
 	 * Device type for Jeedom
 	 */
