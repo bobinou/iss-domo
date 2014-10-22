@@ -47,6 +47,25 @@ class DomoticzController extends BaseController
 		}
 	}
 	
+	public function getjeedomdevicenoroom()
+	{
+		include_once 'jsonrpcClient.class.php';
+		
+		$jeedomroom = array();
+
+		$jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'), Config::get('jeedom.api_key'));
+
+		if($jsonrpc->sendRequest('eqLogic::all', array()))
+		{
+			$jeedomroom['result'] = $jsonrpc->getResult();
+			return $jeedomroom;
+		}
+		else
+		{
+		   echo $jsonrpc->getError();
+		}
+	}
+	
 	public function getjeedomdevice($room)
 	{
 		include_once 'jsonrpcClient.class.php';
@@ -55,7 +74,6 @@ class DomoticzController extends BaseController
 
 		$jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'), Config::get('jeedom.api_key'));
 
-		//if($jsonrpc->sendRequest('eqLogic::all', array()))
 		if($jsonrpc->sendRequest('eqLogic::byObjectId', array('object_id' => $room)))
 		{
 			$jeedomroom['result'] = $jsonrpc->getResult();
@@ -88,11 +106,32 @@ class DomoticzController extends BaseController
 		}
 	}
 	
-	public function formatjeedomid($equip)
+	public function getjeedomdatanoroom()
+	{
+		include_once 'jsonrpcClient.class.php';
+		
+		$jeedomroom = array();
+
+		$jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'), Config::get('jeedom.api_key'));
+
+		if($jsonrpc->sendRequest('cmd::all', array()))
+		{
+			$jeedomroom['result'] = $jsonrpc->getResult();
+			return $jeedomroom;
+			
+		}
+		else
+		{
+		   echo $jsonrpc->getError();
+		}
+	}
+	
+	public function formatjeedomid()
 	{
 		$output = array();
 	
-		$datas = $this->getjeedomdata($equip);
+		$datas = $this->getjeedomdatanoroom();
+		//$datas = $this->getjeedomdata($equip);
 			if(isset($datas['result'])){
 					foreach ($datas['result'] as $datadevice) {
 						//$output[] = array ('id' => $datadevice['id']);
@@ -103,10 +142,11 @@ class DomoticzController extends BaseController
 		return $output;
 	}
 	
-	public function getjeedomdataB($jeedomdataid)
+	public function getjeedomdataB()
 	{
 		//$jeedomdataid = array(1752,1753);
-		$idd = $this->formatjeedomid($jeedomdataid);
+		//$idd = $this->formatjeedomid($jeedomdataid);
+		$idd = $this->formatjeedomid();
 		
 		include_once 'jsonrpcClient.class.php';
 		
@@ -184,19 +224,21 @@ class DomoticzController extends BaseController
 		//Device for Jeedom
 		if(Config::get('hardware.jeedom') == 1){
 		
-		$rooms = $this->getjeedomroom();
+		/**$rooms = $this->getjeedomroom();
 		if(isset($rooms['result'])){
-			foreach ($rooms['result'] as $room) {
+			foreach ($rooms['result'] as $room) {**/
 		
-		$input = $this->getjeedomdevice($room['id']);
+		//$input = $this->getjeedomdevice($room['id']);
+		$input = $this->getjeedomdevicenoroom();
 		if(isset($input['result'])){
 			foreach ($input['result'] as $device) {
 			
-				$datas = $this->getjeedomdata($device['id']);
+				//$datas = $this->getjeedomdata($device['id']);
+				$datas = $this->getjeedomdatanoroom();
 				
 				if(isset($datas['result'])){
 					foreach ($datas['result'] as $datadevice) {
-						
+						if($device['id'] == $datadevice['eqLogic_id']){
 						
 							//Modif bug maison hantee...
 							switch($datadevice['type']){
@@ -215,7 +257,7 @@ class DomoticzController extends BaseController
 								break;
 								default:
 									
-									$datasB = $this->getjeedomdataB($device['id']);
+									$datasB = $this->getjeedomdataB();
 									if(isset($datasB['result'])){
 										foreach ($datasB['result'] as $datadeviceB) {
 											$iddd = $datadevice['id'];
@@ -236,13 +278,13 @@ class DomoticzController extends BaseController
 									}
 							}
 					
-						
+						}
 					}
 				}
 			}
 		}
-		}
-		}
+		//}
+		//}
 		}
 		
 		return Response::json($output);
