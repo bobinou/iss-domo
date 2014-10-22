@@ -294,7 +294,7 @@ class DomoticzController extends BaseController
 											'name' => $device['name'].'-'.$datadevice['name'],
 											'type' => self::convertJeedomDeviceType($datadevice),
 											'room' => $device['object_id'],
-											'params' => (null !== $params) ? $params : array()
+											'params' => array()
 											);
 
 								//}
