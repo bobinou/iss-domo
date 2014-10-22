@@ -126,12 +126,11 @@ class DomoticzController extends BaseController
 		}
 	}
 	
-	public function formatjeedomid()
+	public function formatjeedomid($equip)
 	{
 		$output = array();
 	
-		$datas = $this->getjeedomdatanoroom();
-		//$datas = $this->getjeedomdata($equip);
+		$datas = $this->getjeedomdata($equip);
 			if(isset($datas['result'])){
 					foreach ($datas['result'] as $datadevice) {
 						//$output[] = array ('id' => $datadevice['id']);
@@ -142,12 +141,49 @@ class DomoticzController extends BaseController
 		return $output;
 	}
 	
-	public function getjeedomdataB()
+	public function formatjeedomidnoroom()
+	{
+		$output = array();
+	
+		$datas = $this->getjeedomdatanoroom();
+			if(isset($datas['result'])){
+					foreach ($datas['result'] as $datadevice) {
+						//$output[] = array ('id' => $datadevice['id']);
+						$output[] = $datadevice['id'];
+					}
+			}
+		//return Response::json($output);
+		return $output;
+	}
+	
+	public function getjeedomdataBnoroom()
 	{
 		//$jeedomdataid = array(1752,1753);
 		//$idd = $this->formatjeedomid($jeedomdataid);
-		$idd = $this->formatjeedomid();
+		$idd = $this->formatjeedomidnoroom();
 		
+		include_once 'jsonrpcClient.class.php';
+		
+		$jeedomroom = array();
+		
+		$jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'), Config::get('jeedom.api_key'));
+
+		if($jsonrpc->sendRequest('cmd::execCmd', array('id' => $idd)))
+		{
+			$jeedomroom['result'] = array($jsonrpc->getResult());
+			return $jeedomroom;
+		}
+		else
+		{
+		   echo $jsonrpc->getError();
+		}
+	}
+	
+	public function getjeedomdataB($jeedomdataid)
+	{
+		//$jeedomdataid = array(1752,1753);
+		$idd = $this->formatjeedomid($jeedomdataid);
+	
 		include_once 'jsonrpcClient.class.php';
 		
 		$jeedomroom = array();
@@ -233,38 +269,26 @@ class DomoticzController extends BaseController
 		if(isset($input['result'])){
 			foreach ($input['result'] as $device) {
 			
-				//$datas = $this->getjeedomdata($device['id']);
-				$datas = $this->getjeedomdatanoroom();
+				$datas = $this->getjeedomdata($device['id']);
+				//$datas = $this->getjeedomdatanoroom();
 				
 				if(isset($datas['result'])){
 					foreach ($datas['result'] as $datadevice) {
 						if($device['id'] == $datadevice['eqLogic_id']){
+						$iddd = $datadevice['id'];
 						
-							//Modif bug maison hantee...
-							switch($datadevice['type']){
-								case 'action':
-									$output->devices[] = array (
-											'id' => $datadevice['id'],
-											'name' => $device['name'].'-'.$datadevice['name'],
-											'type' => 'DevSwitch',
-											'room' => $device['object_id'],
-											'params' => array ( array(
-												'key' => 'Status',
-												'value' => '0',
-												),
-												),
-											);
-								break;
-								default:
-									
-									$datasB = $this->getjeedomdataB();
-									if(isset($datasB['result'])){
-										foreach ($datasB['result'] as $datadeviceB) {
-											$iddd = $datadevice['id'];
-											
-											
-									$params = self::convertJeedomDeviceStatus($datadevice,$datadeviceB);
+						if($datadevice['type'] == 'action'){
+
+							}
+						else{
 							
+							$datasB = $this->getjeedomdataB($datadevice['eqLogic_id']);
+							//$datasB = $this->getjeedomdataBnoroom();
+							if(isset($datasB['result'])){
+								foreach ($datasB['result'] as $datadeviceB) {
+
+									$params = self::convertJeedomDeviceStatus($datadevice,$datadeviceB);
+						
 									$output->devices[] = array (
 											'id' => $datadevice['id'],
 											'name' => $device['name'].'-'.$datadevice['name'],
@@ -272,12 +296,10 @@ class DomoticzController extends BaseController
 											'room' => $device['object_id'],
 											'params' => (null !== $params) ? $params : array()
 											);
-								break;
-											
-										}
-									}
+
+								}
 							}
-					
+						}
 						}
 					}
 				}
