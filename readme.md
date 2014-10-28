@@ -71,13 +71,13 @@ Indiquer en url en fonction de l'adresse de votre serveur ISS-DOMO : ```http://I
 ---
 5.Mise a jour de ISS-DOMO
 
-> cd /var/www/iss-domo/ && sudo git pull
+> cd /usr/share/nginx/www/iss-domo/ && sudo git pull
 
 La configuration est conservée.
 
 ---
 ---
-12.PARAMETRAGE de ISS-DOMO pour Jeedom 
+6.PARAMETRAGE de ISS-DOMO pour Jeedom 
 
 Editer le fichier ```/usr/share/nginx/www/iss-domo/app/config/hardware.php```
 
