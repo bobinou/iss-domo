@@ -17,9 +17,32 @@ class DomoticzController extends BaseController
    public function system()
    {
       return Response::json(array(
-         'id' => 'ISS-Domo Beta Jeedom v1.0.0',
+         'id' => 'ISS-Domo Beta Jeedom v2.0.0',
          'apiversion' => 1,
       ));
+   }
+   
+   /**
+   *GetJeedomFULLdata.
+   *@returnstringJsonformattedsysteminformations.
+   */
+   public function getjeedomfull()
+   {
+      include_once 'jsonrpcClient.class.php';
+
+      $jeedomfull = array();
+
+      $jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'),Config::get('jeedom.api_key'));
+
+      if($jsonrpc -> sendRequest('object::full',array()))
+      {
+         $jeedomfull['result'] = $jsonrpc->getResult();
+         return $jeedomfull;
+      }
+      else
+      {
+         echo $jsonrpc -> getError();
+      }
    }
 
    /**
@@ -45,101 +68,46 @@ class DomoticzController extends BaseController
       }
    }
 
-   public function getjeedomdevices()
-   {
-      include_once 'jsonrpcClient.class.php';
+   
 
-      $jeedomdevices=array();
-
-      $jsonrpc=new jsonrpcClient(Config::get('jeedom.jeedom_url'),Config::get('jeedom.api_key'));
-
-      if($jsonrpc->sendRequest('eqLogic::all',array()))
-      {
-         $jeedomdevices['result']=$jsonrpc->getResult();
-         return$jeedomdevices;
-      }
-      else
-      {
-         echo $jsonrpc->getError();
-      }
-   }
-
-   public function getjeedomcommands()
-   {
-      include_once'jsonrpcClient.class.php';
-
-      $jeedomcommands = array();
-
-      $jsonrpc=new jsonrpcClient(Config::get('jeedom.jeedom_url'),Config::get('jeedom.api_key'));
-
-      if($jsonrpc -> sendRequest('cmd::all',array()))
-      {
-         $jeedomcommands['result'] = $jsonrpc->getResult();
-         return $jeedomcommands;
-
-      }
-      else
-      {
-         echo $jsonrpc -> getError();
-      }
-   }
-
-   public function getjeedominfovalues($ids)
-   {
-      include_once 'jsonrpcClient.class.php';
-
-      $jeedomvalues = array();
-
-      $jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'),Config::get('jeedom.api_key'));
-
-      if($jsonrpc -> sendRequest('cmd::execCmd',array('id' => $ids)))
-      {
-         $jeedomvalues['result'] = $jsonrpc -> getResult();
-         return $jeedomvalues;
-      }
-      else
-      {
-         echo $jsonrpc -> getError();
-      }
-
-   }
 
 /** Public function for actions Jeedom **/
 public function action($deviceId, $actionName, $actionParam = null)
    {
       //DeviceforJeedom
       if (Config::get('hardware.jeedom') == 1){
-
-         //$rooms = $this -> getjeedomrooms();
-         $devices = $this -> getjeedomdevices();
-         $commands = $this -> getjeedomcommands();
-         
-         include_once 'jsonrpcClient.class.php';
-
-         foreach ($commands['result'] as $command){
-            if ($command['id'] == $deviceId){
-               $infos = $command['eqLogic_id'];
-            }
-         }
       
-         if ($actionName == 'setStatus' AND $actionParam == 1){
-            foreach ($commands['result'] as $command){
-               if ($command['eqLogic_id'] == $infos and $command['name'] == 'On'){
-                  $ids = $command['id'];
-               }
-            }
-         }
-         elseif ($actionName == 'setStatus' AND $actionParam == 0){
-            foreach ($commands['result'] as $command){
-               if ($command['eqLogic_id'] == $infos and $command['name'] == 'Off'){
-                  $ids = $command['id'];
-               }
-            }
-         }
+      include_once 'jsonrpcClient.class.php';
+
+		$fulldata = $this->getjeedomfull();
+		if(isset($fulldata['result'])){
+			foreach ($fulldata['result'] as $data) {			
+				foreach ($data['eqLogics'] as $equipment) {	
+						foreach ($equipment['cmds'] as $command) {
+				            if ($command['id'] == $deviceId){
+               					$infos = $command['eqLogic_id'];
+               				}
+               				
+               				if ($actionName == 'setStatus' AND $actionParam == 1){
+               					if ($command['eqLogic_id'] == $infos and $command['name'] == 'On'){
+                  					$ids = $command['id'];
+               					}
+            				}
+         
+         					elseif ($actionName == 'setStatus' AND $actionParam == 0){
+               					if ($command['eqLogic_id'] == $infos and $command['name'] == 'Off'){
+                  					$ids = $command['id'];
+               					}
+            				}
+
          $jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'),Config::get('jeedom.api_key'));
 
          $jsonrpc -> sendRequest('cmd::execCmd',array('id' => $ids));
       
+      				}
+      			}
+      		}
+      	}
       }
    }
 
@@ -172,22 +140,6 @@ public function action($deviceId, $actionName, $actionParam = null)
    }
 
 
-   /**
-   *Retrievethelistoftherooms.
-   *@returnJsonformattedstringlistingallrooms.
-   */
-   public function searchForId($id,$array)
-   {
-      foreach ($array as $key => $val){
-         if ($val['id'] == $id){
-            return $key;
-         }
-      }
-      return null;
-   }
-
-
-
 
    /**
    *Retrievethelistoftheavailabledevices.
@@ -198,51 +150,36 @@ public function action($deviceId, $actionName, $actionParam = null)
       $output = new stdClass();
       $output -> devices = array();
 
-      //DeviceforJeedom
-      if (Config::get('hardware.jeedom') == 1){
-
-         $rooms = $this -> getjeedomrooms();
-         $devices = $this -> getjeedomdevices();
-         $commands = $this -> getjeedomcommands();
-
-         $infos = array();
-
-         foreach ($commands['result'] as $command){
-            if ($command['type'] == 'info' AND $command['isVisible'] == 1){
-               $infos[] = $command['id'];
-            }
-         }
-
-         $commands_value = $this -> getjeedominfovalues($infos);
-
-         foreach ($commands['result'] as $command){
-
-            if ($command['isVisible'] == 1 AND $command['type'] == 'info'){
-               $idarraydevices = $this -> searchForId($command['eqLogic_id'],$devices['result']);
-               if($devices['result'][$idarraydevices]['object_id']){
-                  $idarrayrooms = $this -> searchForId($devices['result'][$idarraydevices]['object_id'],$rooms['result']);
-                  $name = $rooms['result'][$idarrayrooms]['name'].'-'.$devices['result'][$idarraydevices]['name'].'-'.$command['name'];
-               }
-               else{
-                  $name = $devices['result'][$idarraydevices]['name'].'-'.$command['name'];
-               }
-               if(isset($commands_value['result'][$command['id']])){
-                  $params = self::convertJeedomDeviceStatus($command,$commands_value['result'][$command['id']]);
-               }
-               else{
-                  $params = self::convertJeedomDeviceStatus($command,$command);
-               }
-               $output->devices[] = array(
-                  'id'=>$command['id'],
-                  'name'=>$name,
-                  'type'=>self::convertJeedomDeviceType($command),
-                  'room'=>$devices['result'][$idarraydevices]['object_id'],
-                  'params'=>$params
-               );
-            }
-         }
-
-      }
+      //Device for Jeedom
+		if(Config::get('hardware.jeedom') == 1){
+		
+		$fulldata = $this->getjeedomfull();
+		if(isset($fulldata['result'])){
+			foreach ($fulldata['result'] as $data) {
+			
+				foreach ($data['eqLogics'] as $equipment) {
+				
+					if ($equipment['isVisible'] == 1){
+					
+						foreach ($equipment['cmds'] as $command) {
+											
+						$params = self::convertJeedomDeviceStatus($command);
+							
+						$output->devices[] = array (
+											'id' => $command['id'],
+											'name' => $equipment['name'].'-'.$command['name'],
+											'type' => self::convertJeedomDeviceType($command),
+											'room' => $data['id'],
+											'params' => (null !== $params) ? $params : array()
+											);
+											
+						}						
+					}
+				}
+			}
+		}
+						
+	}
 
       return Response::json($output);
 
@@ -331,8 +268,7 @@ public function action($deviceId, $actionName, $actionParam = null)
    /**
    *ParamforJeedom
    */
-   private static function convertJeedomDeviceStatus($datadevice,$datadeviceB){
-      $iddd=$datadevice['id'];
+   private static function convertJeedomDeviceStatus($datadevice){
 
       switch($datadevice['type']){
          case'info':
@@ -342,68 +278,68 @@ public function action($deviceId, $actionName, $actionParam = null)
                   case'°C':
                      $newType=array(array(
                         'key'=>'Value',
-                        'value'=>$datadeviceB['value'],
+                        'value'=>$datadevice['state'],
                         'unit'=>'°C',
                      ));
                      break;
                   case'%':
                      $newType=array(array(
                         'key'=>'Value',
-                        'value'=>$datadeviceB['value'],
+                        'value'=>$datadevice['state'],
                         'unit'=>'%',
                      ));
                      break;
                   case'Pa':
                      $newType=array(array(
                         'key'=>'Value',
-                        'value'=>$datadeviceB['value'],
+                        'value'=>$datadevice['state'],
                         'unit'=>'mbar',
                      ));
                      break;
                   case'km/h':
                      $newType=array(array(
                         'key'=>'Speed',
-                        'value'=>$datadeviceB['value'],
+                        'value'=>$datadevice['state'],
                         'unit'=>'km/h',
                      ));
                      break;
                   case'W':
                      $newType=array(array(
                            'key'=>'Watts',
-                           'value'=>$datadeviceB['value'],
+                           'value'=>$datadevice['state'],
                            'unit'=>'Watt',
                            ),
                         array(
                            'key'=>'ConsoTotal',
-                           'value'=>$datadeviceB['value'],
+                           'value'=>$$datadevice['state'],
                            'unit'=>'kWh',
                      ));
                      break;
                   case'mm/h':
                      $newType=array(array(
                         'key'=>'Value',
-                        'value'=>$datadeviceB['value'],
+                        'value'=>$datadevice['state'],
                         'unit'=>'mm/h',
                      ));
                      break;
                   case'mm':
                      $newType=array(array(
                         'key'=>'Accumulation',
-                        'value'=>$datadeviceB['value'],
+                        'value'=>$datadevice['state'],
                         'unit'=>'mm',
                      ));
                      break;
                   case'Lux':
                      $newType=array(array(
                         'key'=>'Value',
-                        'value'=>$datadeviceB['value'],
+                        'value'=>$datadevice['state'],
                         'unit'=>'lux',
                      ));
                      break;
                   default:
                      $newType=array(array(
                         'key'=>'Value',
-                        'value'=>$datadeviceB['value'],
+                        'value'=>$datadevice['state'],
                         'unit'=>'',
                      ));
                      break;
@@ -413,7 +349,7 @@ public function action($deviceId, $actionName, $actionParam = null)
                      case'store':
                         $newType=array(array(
                               'key'=>'Level',
-                              'value'=>$datadeviceB['value'],
+                              'value'=>$datadevice['state'],
                            ),
                            array(
                               'key'=>'stopable',
@@ -439,13 +375,13 @@ public function action($deviceId, $actionName, $actionParam = null)
                      case'vibration':
                         $newType=array(array(
                            'key'=>'Tripped',
-                           'value'=>$datadeviceB['value'],
+                           'value'=>$datadevice['state'],
                         ));
                         break;
                      case'lock':
                         $newType=array(array(
                               'key'=>'Tripped',
-                              'value'=>$datadeviceB['value'],
+                              'value'=>$datadevice['state'],
                            ),
                            array(
                               'key'=>'Armed',
@@ -463,7 +399,7 @@ public function action($deviceId, $actionName, $actionParam = null)
                      case'store':
                         $newType=array(array(
                               'key'=>'Level',
-                              'value'=>$datadeviceB['value'],
+                              'value'=>$datadevice['state'],
                            ),
                            array(
                               'key'=>'stopable',
@@ -478,13 +414,13 @@ public function action($deviceId, $actionName, $actionParam = null)
                      case'prise':
                         $newType=array(array(
                            'key'=>'Status',
-                           'value'=>$datadeviceB['value'],
+                           'value'=>$datadevice['state'],
                         ));
                         break;
                      default:
                         $newType=array(array(
                            'key'=>'Status',
-                           'value'=>$datadeviceB['value'],
+                           'value'=>$datadevice['state'],
                         ));
                         break;
                   }
@@ -492,14 +428,14 @@ public function action($deviceId, $actionName, $actionParam = null)
             else{
                $newType=array(array(
                   'key'=>'Status',
-                  'value'=>$datadeviceB['value'],
+                  'value'=>$datadevice['state'],
                ));
             }
             break;
             default:
                $newType=array(array(
                   'key'=>'Value',
-                  'value'=>$datadeviceB['value'],
+                  'value'=>$datadevice['state'],
                   'unit'=>'',
                ));
             break;
