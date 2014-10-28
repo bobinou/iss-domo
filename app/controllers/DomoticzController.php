@@ -104,6 +104,46 @@ class DomoticzController extends BaseController
 
    }
 
+/** Public function for actions Jeedom **/
+public function action($deviceId, $actionName, $actionParam = null)
+   {
+      //DeviceforJeedom
+      if (Config::get('hardware.jeedom') == 1){
+
+         //$rooms = $this -> getjeedomrooms();
+         $devices = $this -> getjeedomdevices();
+         $commands = $this -> getjeedomcommands();
+         
+         include_once 'jsonrpcClient.class.php';
+
+         foreach ($commands['result'] as $command){
+            if ($command['id'] == $deviceId){
+               $infos = $command['eqLogic_id'];
+            }
+         }
+      
+         if ($actionName == 'setStatus' AND $actionParam == 1){
+            foreach ($commands['result'] as $command){
+               if ($command['eqLogic_id'] == $infos and $command['name'] == 'On'){
+                  $ids = $command['id'];
+               }
+            }
+         }
+         elseif ($actionName == 'setStatus' AND $actionParam == 0){
+            foreach ($commands['result'] as $command){
+               if ($command['eqLogic_id'] == $infos and $command['name'] == 'Off'){
+                  $ids = $command['id'];
+               }
+            }
+         }
+         $jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'),Config::get('jeedom.api_key'));
+
+         $jsonrpc -> sendRequest('cmd::execCmd',array('id' => $ids));
+      
+      }
+   }
+
+
    /**
    *Retrievethelistoftherooms.
    *@returnJsonformattedstringlistingallrooms.
