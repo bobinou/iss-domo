@@ -105,7 +105,7 @@ Editer le fichier ```/etc/nginx/sites-enabled/default```
 
 > sudo nano /etc/nginx/sites-enabled/default
 
-Ajouter les lignes suivantes dans la section ```location /iss-domo/public/ { ```
+Ajouter les lignes suivantes dans la section ```location /iss-domo/public/ { ``` :
 
 ``` auth_basic "Restricted Access"; ```
 
@@ -118,6 +118,10 @@ Redemarrer Nginx
 L'accès à Iss-domo se fait toujours sur l'url ```http://IP-server-iss-domo/iss-domo/public```.
 
 Le login est ``` iss-domo ``` et le mot de passe ``` iss-domo ```.
+
+Les accès peuvent etre modifiés en éditant le fichier ``` /usr/share/nginx/www/iss-domo/app/config/.htpasswd ```
+
+> sudo nano /usr/share/nginx/www/iss-domo/app/config/.htpasswd
 
 ### License
 
