@@ -7,6 +7,8 @@ Beta version !!!
 
 Community for users here : https://plus.google.com/communities/113236981415459933411
 
+Compatible with Jeedom version 1.126.0
+
 ---
 ---
 1.INTRODUCTION
@@ -27,9 +29,9 @@ ISS-DOMO peut être installé sur le même serveur que Jeedom.
 ---
 2.INSTALLATION des DEPENDANCES et de ISS-DOMO
 
-ISS-Domo is install with the next command in the directory /var/www. You could install it where you want.
+ISS-Domo is install with the next command in the directory /usr/share/nginx/www. You could install it where you want.
 
-> sudo apt-get update && sudo apt-get install php5 && sudo apt-get install php5-mcrypt && sudo apt-get install php5-curl && sudo apt-get install unzip && sudo apt-get install php5-sqlite && sudo apt-get install git-core && cd /usr/share/nginx/www/ && sudo git clone -b beta-jeedom https://github.com/bobinou/iss-domo.git && sudo chmod -R 777 /usr/share/nginx/www/iss-domo/
+> sudo apt-get update && sudo apt-get install -y php5 && sudo apt-get install -y php5-mcrypt && sudo apt-get install -y php5-curl && sudo apt-get install -y unzip && sudo apt-get install -y php5-sqlite && sudo apt-get install -y git-core && cd /usr/share/nginx/www/ && sudo git clone -b beta-jeedom https://github.com/bobinou/iss-domo.git && sudo chmod -R 777 /usr/share/nginx/www/iss-domo/
 
 ---
 ---
