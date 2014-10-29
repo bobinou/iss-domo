@@ -311,7 +311,7 @@ public function action($deviceId, $actionName, $actionParam = null)
                            ),
                         array(
                            'key'=>'ConsoTotal',
-                           'value'=>$$datadevice['state'],
+                           'value'=>$datadevice['state'],
                            'unit'=>'kWh',
                      ));
                      break;
