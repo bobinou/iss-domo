@@ -96,6 +96,29 @@ Modifier la ligne : ```jeedom_url``` afin d'indiquer l'url d'accès à votre ser
 Si Jeedom est installé sur le même serveur, indiquer par exemple : ```http://localhost/jeedom/core/api/jeeApi.php```
 
 Modifier la ligne : ```api_key``` afin d'indiquer la clé API à votre serveur Jeedom (à retrouver depuis Jeedom dans le module Administration).
+
+---
+---
+7.Sécurisation de l'accès à ISS-Domo
+
+Editer le fichier ```/etc/nginx/sites-enabled/default```
+
+> sudo nano /etc/nginx/sites-enabled/default
+
+Ajouter les lignes suivantes dans la section ```location /iss-domo/public/ { ```
+
+``` auth_basic "Restricted Access"; ```
+
+``` auth_basic_user_file /usr/share/nginx/www/iss-domo/app/config/.htpasswd; ```
+
+Redemarrer Nginx
+
+> sudo /etc/init.d/nginx restart
+
+L'accès à Iss-domo se fait toujours sur l'url ```http://IP-server-iss-domo/iss-domo/public```.
+
+Le login est ``` iss-domo ``` et le mot de passe ``` iss-domo ```.
+
 ### License
 
 ISS-Domo is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT)
