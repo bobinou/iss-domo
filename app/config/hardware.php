@@ -6,11 +6,11 @@ return array(
 	* Enable (1) or disable (0) hardware
 	*/
 	
-	'domoticz' => 1,
+	'domoticz' => 0,
 	'freebox_player' => 0,
 	'freebox_server' => 0,
 	'xbmc' => 0,
 	'nas' => 0,
-	'jeedom' => 0,
+	'jeedom' => 1,
 
 );
