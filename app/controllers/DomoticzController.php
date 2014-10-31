@@ -230,7 +230,7 @@ public function action($deviceId, $actionName, $actionParam = null)
                      switch($datadevice['template']['dashboard']){
                         case'door':
                         case'window':
-                        case'garage':
+                        case'porte_garage':
                            $newType='DevDoor';
                            break;
                         case'fire':
