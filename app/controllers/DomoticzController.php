@@ -232,7 +232,20 @@ public function action($deviceId, $actionName, $actionParam = null)
                         $newType='DevElectricity';
                         break;
                      default:
-                        $newType='DevGenericSensor';
+                        if(isset($datadevice['eqType'])){
+                           switch($datadevice['eqType']){
+                              case'Store':
+                                 $newType='DevShutter';
+                                 break;
+                              default:
+                                 $newType='DevGenericSensor';
+                                 break;
+                           }
+                        }
+                        else {
+                           $newType='DevGenericSensor';
+                           break;
+                        }
                         break;
                   }
                   
