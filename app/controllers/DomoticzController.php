@@ -71,44 +71,56 @@ class DomoticzController extends BaseController
    
 
 
-/** Public function for actions Jeedom **/
 public function action($deviceId, $actionName, $actionParam = null)
    {
       //DeviceforJeedom
       if (Config::get('hardware.jeedom') == 1){
-      
+
       include_once 'jsonrpcClient.class.php';
 
-		$fulldata = $this->getjeedomfull();
-		if(isset($fulldata['result'])){
-			foreach ($fulldata['result'] as $data) {			
-				foreach ($data['eqLogics'] as $equipment) {	
-						foreach ($equipment['cmds'] as $command) {
-				            if ($command['id'] == $deviceId){
-               					$infos = $command['eqLogic_id'];
-               				}
-               				
-               				if ($actionName == 'setStatus' AND $actionParam == 1){
-               					if ($command['eqLogic_id'] == $infos and $command['name'] == 'On'){
-                  					$ids = $command['id'];
-               					}
-            				}
-         
-         					elseif ($actionName == 'setStatus' AND $actionParam == 0){
-               					if ($command['eqLogic_id'] == $infos and $command['name'] == 'Off'){
-                  					$ids = $command['id'];
-               					}
-            				}
+                $fulldata = $this->getjeedomfull();
+                if(isset($fulldata['result'])){
+                        foreach ($fulldata['result'] as $data) {
+                                foreach ($data['eqLogics'] as $equipment) {
+                                        foreach ($equipment['cmds'] as $command) {
+                                                if ($command['id'] == $deviceId){
+                                                        $infos = $command['eqLogic_id'];
+                                                }
 
-         $jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'),Config::get('jeedom.api_key'));
+                                                if (isset($infos)) {
+                                                        if ($actionName == 'setStatus' AND $actionParam == 1){
+                                                                if ($command['eqLogic_id'] == $infos and $command['name'] == 'On'){
+                                                                        $ids = $command['id'];
+                                                                }
+                                                        } elseif ($actionName == 'setStatus' AND $actionParam == 0){
+                                                                if ($command['eqLogic_id'] == $infos and $command['name'] == 'Off'){
+                                                                        $ids = $command['id'];
+                                                                }
+                                                        }
 
-         $jsonrpc -> sendRequest('cmd::execCmd',array('id' => $ids));
-      
-      				}
-      			}
-      		}
-      	}
-      }
+                                                        if ($actionName == 'setLevel' AND $actionParam == 0){
+                                                                if ($command['eqLogic_id'] == $infos and $command['name'] == 'Down'){
+                                                                        $ids = $command['id'];
+                                                                }
+                                                        } elseif ($actionName == 'setLevel' AND $actionParam == 100){
+                                                                if ($command['eqLogic_id'] == $infos and $command['name'] == 'Up'){
+                                                                        $ids = $command['id'];
+
+                                                                }
+                                                        }
+                                                }
+                                                if (isset($ids)) {
+                                                        $jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'),Config::get('jeedom.api_key'));
+
+                                                        $jsonrpc -> sendRequest('cmd::execCmd',array('id' => $ids));
+                                                }
+                                        }
+                                        $infos = null;
+                                        $ids = null;
+                                }
+                        }
+                }
+        }
    }
 
 
