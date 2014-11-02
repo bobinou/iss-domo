@@ -69,57 +69,81 @@ class DomoticzController extends BaseController
    }
 
    
+private static function recherche($fulldata, $infos, $cmd, $test)
+   {
+      //file_put_contents('/var/www/iss-domo/app/controllers/action.log', $infos.'-'.$cmd.'-'.$test."\n");
+      foreach ($fulldata['result'] as $data) {
+         foreach ($data['eqLogics'] as $equipment) {
+            foreach ($equipment['cmds'] as $command) {
+               if ($cmd == null){
+                  if ($command['id'] == $infos){
+                     $id_retour = $command[$test];
+                  }
+               }
+               else {
+                  if ($command['eqLogic_id'] == $infos and $command['name'] == $cmd){
+                     $id_retour = $command[$test];
+                  }
+               }
+            }
+         }
+      }
+      return $id_retour;
+   }
 
 
 public function action($deviceId, $actionName, $actionParam = null)
    {
-      //DeviceforJeedom
+      //file_put_contents('/var/www/iss-domo/app/controllers/action.log', $deviceId.'-'.$actionName.'-'.$actionParam."\n");
+     //DeviceforJeedom
       if (Config::get('hardware.jeedom') == 1){
 
       include_once 'jsonrpcClient.class.php';
 
                 $fulldata = $this->getjeedomfull();
                 if(isset($fulldata['result'])){
-                        foreach ($fulldata['result'] as $data) {
-                                foreach ($data['eqLogics'] as $equipment) {
-                                        foreach ($equipment['cmds'] as $command) {
-                                                if ($command['id'] == $deviceId){
-                                                        $infos = $command['eqLogic_id'];
-                                                }
+                        $test = 'eqLogic_id';
+                  $cmd = null;
+                  $infos = self::recherche($fulldata, $deviceId, $cmd, $test);
+            }
+            
+            if (isset($infos)) {
+               Switch ($actionName){
+                  case 'setStatus' :
+                     if ($actionParam == 1){
+                        $test = 'id';
+                        $cmd = 'On';
+                        $ids = self::recherche($fulldata, $infos, $cmd, $test);
+                     } elseif ($actionParam == 0){
+                        
+                        $test = 'id';
+                        $cmd = 'Off';
+                        $ids = self::recherche($fulldata, $infos, $cmd, $test);
+                        
+                     }
+                     break;
+                  case 'setLevel' :               
+                     if ($actionParam == 0){
+                        $test = 'id';
+                        $cmd = 'Down';
+                        $ids = self::recherche($fulldata, $infos, $cmd, $test);
+                     } elseif ($actionParam == 100){
+                        $test = 'id';
+                        $cmd = 'Up';
+                        $ids = self::recherche($fulldata, $infos, $cmd, $test);
+                     }
+                     break;
+               }
+            }
+            if (isset($ids)) {
+                  $jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'),Config::get('jeedom.api_key'));
 
-                                                if (isset($infos)) {
-                                                        if ($actionName == 'setStatus' AND $actionParam == 1){
-                                                                if ($command['eqLogic_id'] == $infos and $command['name'] == 'On'){
-                                                                        $ids = $command['id'];
-                                                                }
-                                                        } elseif ($actionName == 'setStatus' AND $actionParam == 0){
-                                                                if ($command['eqLogic_id'] == $infos and $command['name'] == 'Off'){
-                                                                        $ids = $command['id'];
-                                                                }
-                                                        }
-
-                                                        if ($actionName == 'setLevel' AND $actionParam == 0){
-                                                                if ($command['eqLogic_id'] == $infos and $command['name'] == 'Down'){
-                                                                        $ids = $command['id'];
-                                                                }
-                                                        } elseif ($actionName == 'setLevel' AND $actionParam == 100){
-                                                                if ($command['eqLogic_id'] == $infos and $command['name'] == 'Up'){
-                                                                        $ids = $command['id'];
-
-                                                                }
-                                                        }
-                                                }
-                                                if (isset($ids)) {
-                                                        $jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'),Config::get('jeedom.api_key'));
-
-                                                        $jsonrpc -> sendRequest('cmd::execCmd',array('id' => $ids));
-                                                }
-                                        }
-                                        $infos = null;
-                                        $ids = null;
-                                }
-                        }
-                }
+                  $jsonrpc -> sendRequest('cmd::execCmd',array('id' => $ids));
+            }
+      
+      
+      $infos = null;
+      $ids = null;
         }
    }
 
