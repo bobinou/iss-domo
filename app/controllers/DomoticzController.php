@@ -17,7 +17,7 @@ class DomoticzController extends BaseController
    public function system()
    {
       return Response::json(array(
-         'id' => 'ISS-Domo Beta Jeedom v2.0.0',
+         'id' => 'ISS-Domo Beta Jeedom v3.0.0',
          'apiversion' => 1,
       ));
    }
@@ -68,10 +68,9 @@ class DomoticzController extends BaseController
       }
    }
 
-   
+// Private function search   
 private static function recherche($fulldata, $infos, $cmd, $test)
    {
-      //file_put_contents('/var/www/iss-domo/app/controllers/action.log', $infos.'-'.$cmd.'-'.$test."\n");
       foreach ($fulldata['result'] as $data) {
          foreach ($data['eqLogics'] as $equipment) {
             foreach ($equipment['cmds'] as $command) {
@@ -91,10 +90,9 @@ private static function recherche($fulldata, $infos, $cmd, $test)
       return $id_retour;
    }
 
-
+// Public function action
 public function action($deviceId, $actionName, $actionParam = null)
    {
-      //file_put_contents('/var/www/iss-domo/app/controllers/action.log', $deviceId.'-'.$actionName.'-'.$actionParam."\n");
      //DeviceforJeedom
       if (Config::get('hardware.jeedom') == 1){
 
