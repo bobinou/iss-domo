@@ -130,15 +130,23 @@ Si Domoticz est installé sur le même serveur et indiquer par exemple : ```http
 ---
 6.PARAMETRAGE de ISS-DOMO pour Jeedom
 
-Editer le fichier ```/var/www/iss-domo/app/config/hardware.php```
+Editer le fichier ```/var/www/iss-domo/app/config/hardware.php``` ou ```/usr/share/nginx/www/iss-domo/app/config/hardware.php```
 
 > sudo nano /var/www/iss-domo/app/config/hardware.php
 
-Activer la gestion de Jeedom en indiquant ``` 'jeedom' => 1,```.
+ou
 
-Editer le fichier ```/var/www/iss-domo/app/config/jeedom.php```
+> sudo nano /usr/share/nginx/www/iss-domo/app/config/hardware.php
 
-> sudo nano /var/www/iss-domo/app/config/iss-domo.php
+Activer la gestion de Jeedom en indiquant ``` 'jeedom' => 1,``` et desactiver Domoticz si à 1.
+
+Editer le fichier ```/var/www/iss-domo/app/config/jeedom.php``` ou ```/usr/share/nginx/www/iss-domo/app/config/jeedom.php```
+
+> sudo nano /var/www/iss-domo/app/config/jeedom.php
+
+ou
+
+> sudo nano /usr/share/nginx/www/iss-domo/app/config/jeedom.php
 
 Modifier la ligne : ```jeedom_url``` afin d'indiquer l'url d'accès à votre serveur Jeedom.
 
