@@ -19,7 +19,7 @@ ISS-Domo est développé en PHP.
 
 ISS-DOMO peut être installé sur un Raspberry.
 
-ISS-DOMO peut être installé sur le même serveur que Domoticz.
+ISS-DOMO peut être installé sur le même serveur que Domoticz ou Jeedom.
 
 ---
 ---
@@ -27,7 +27,47 @@ ISS-DOMO peut être installé sur le même serveur que Domoticz.
 
 ISS-Domo is install with the next command in the directory /var/www. You could install it where you want.
 
-> sudo apt-get update && sudo apt-get install php5 && sudo apt-get install php5-mcrypt && sudo apt-get install php5-curl && sudo apt-get install unzip && sudo apt-get install php5-sqlite && sudo apt-get install git-core && cd /var/www/ && sudo git clone https://github.com/bobinou/iss-domo.git && sudo chmod -R 777 /var/www/iss-domo/
+> sudo apt-get update && sudo apt-get install -y php5 && sudo apt-get install -y php5-mcrypt && sudo apt-get install -y php5-curl && sudo apt-get install -y unzip && sudo apt-get install -y php5-sqlite && sudo apt-get install -y git-core && cd /var/www/ && sudo git clone https://github.com/bobinou/iss-domo.git && sudo chmod -R 777 /var/www/iss-domo/
+
+---
+---
+AU CHOIX SOIT UTILISATION DE NGINX (3) / OU UTILISATION DU SERVICE ISS-DOMO(4)
+
+---
+---
+3.Integration d'ISS-Domo a NGinx
+
+Copier iss-domo dans le répertoire www de Nginx iss-domo :
+
+> sudo cp -R /var/www/iss-domo/ /usr/share/nginx/www/
+
+Appliquer les droits :
+
+> sudo chmod -R 777 /usr/share/nginx/www/iss-domo/
+
+Editer le fichier  ```/etc/nginx/sites-enabled/default```
+
+> sudo nano /etc/nginx/sites-enabled/default
+
+Ajouter les lignes suivantes AVANT la location /jeedom si elle existe
+
+``` location /iss-domo/public/ { ```
+
+```            try_files $uri $uri/ @rewrite; ```
+
+```        } ```
+
+```        location @rewrite { ```
+
+```                rewrite ^/(?<appname>[^/]+)/public/(?<appurl>.+)$ /$appname/public/index.php?_url=/$appurl last; ```
+
+```        } ```
+
+Redemarrer Nginx
+
+> sudo /etc/init.d/nginx restart
+
+ISS-Domo est alors accessible depuis Imperihome à l'adresse ```http://IP-server-iss-domo/iss-domo/public```
 
 ---
 ---
@@ -41,7 +81,7 @@ ISS-Domo is install with the next command in the directory /var/www. You could i
 
 ---
 ---
-5.CONFIGURATION du service ISS-DOMO :
+4.1.CONFIGURATION du service ISS-DOMO :
 
 Editer le fichier /etc/init.d/iss-domo.sh et modifier les variables suivantes en fonction de votre installation :
 
@@ -70,7 +110,7 @@ Pour contrôler le service :
 
 ---
 ---
-6.PARAMETRAGE de ISS-DOMO pour Domoticz
+5.PARAMETRAGE de ISS-DOMO pour Domoticz
 
 Editer le fichier ```/var/www/iss-domo/app/config/hardware.php```
 
@@ -85,6 +125,26 @@ Editer le fichier ```/var/www/iss-domo/app/config/iss-domo.php```
 Modifier la ligne : ```domoticz_url``` afin d'indiquer l'url d'accès à votre serveur Domoticz.
 
 Si Domoticz est installé sur le même serveur et indiquer par exemple : ```http://localhost:8180```
+
+---
+---
+6.PARAMETRAGE de ISS-DOMO pour Jeedom
+
+Editer le fichier ```/var/www/iss-domo/app/config/hardware.php```
+
+> sudo nano /var/www/iss-domo/app/config/hardware.php
+
+Activer la gestion de Jeedom en indiquant ``` 'jeedom' => 1,```.
+
+Editer le fichier ```/var/www/iss-domo/app/config/jeedom.php```
+
+> sudo nano /var/www/iss-domo/app/config/iss-domo.php
+
+Modifier la ligne : ```jeedom_url``` afin d'indiquer l'url d'accès à votre serveur Jeedom.
+
+Si Jeedom est installé sur le même serveur, indiquer par exemple : ```http://localhost/jeedom/core/api/jeeApi.php```
+
+Modifier la ligne : ```api_key``` afin d'indiquer la clé API à votre serveur Jeedom (à retrouver depuis Jeedom dans le module Administration).
 
 ---
 ---
@@ -126,7 +186,7 @@ Si l'url lancée précédement vous a renvoyé une erreur, relancez la. En fonct
 
 ---
 ---
-9.PARAMETRAGE de ISS-DOMO pour Freebox Server (AVEC Domoticz)
+10.PARAMETRAGE de ISS-DOMO pour Freebox Server (AVEC Domoticz)
 
 Editer le fichier ```/var/www/iss-domo/app/config/hardware.php```
 
@@ -148,7 +208,7 @@ Si l'url lancée précédement vous a renvoyé une erreur, relancez la. En fonct
 
 ---
 ---
-10.INTEGRATION de Freebox Server à Domoticz
+11.INTEGRATION de Freebox Server à Domoticz
 
 Une fois l'étape précédente n°9 effectuée, il vous faut intégrer la Freebox Server à Domoticz.
 
@@ -216,7 +276,7 @@ Si ISS-Domo est dans la liste mais est "en attente de validation" ou "délais d�
 
 ---
 ---
-11.PARAMETRAGE de ISS-DOMO pour XBMC (AVEC ou SANS Domoticz)
+12.PARAMETRAGE de ISS-DOMO pour XBMC (AVEC ou SANS Domoticz)
 
 Editer le fichier ```/var/www/iss-domo/app/config/hardware.php```
 
@@ -235,26 +295,6 @@ Dans ce fichier indiquer l'url d'XBMC ainsi que son port à la ligne  ``` 'xbmc_
 Indiquer ensuite si vous souhaitez utiliser la médiathèque de films et/ou de musiques aux lignes
   ``` ''xbmc_movies' => 1   ```
   ```	'xbmc_songs' => 1   ```
-
----
----
-12.PARAMETRAGE de ISS-DOMO pour Jeedom (AVEC ou SANS Domoticz)
-
-Editer le fichier ```/var/www/iss-domo/app/config/hardware.php```
-
-> sudo nano /var/www/iss-domo/app/config/hardware.php
-
-Activer la gestion de Jeedom en indiquant ``` 'jeedom' => 1,```.
-
-Editer le fichier ```/var/www/iss-domo/app/config/jeedom.php```
-
-> sudo nano /var/www/iss-domo/app/config/iss-domo.php
-
-Modifier la ligne : ```jeedom_url``` afin d'indiquer l'url d'accès à votre serveur Jeedom.
-
-Si Jeedom est installé sur le même serveur, indiquer par exemple : ```http://localhost/jeedom/core/api/jeeApi.php```
-
-Modifier la ligne : ```api_key``` afin d'indiquer la clé API à votre serveur Jeedom (à retrouver depuis Jeedom dans le module Administration).
 
 ### License
 
