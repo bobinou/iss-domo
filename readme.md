@@ -130,7 +130,7 @@ Si Domoticz est installé sur le même serveur et indiquer par exemple : ```http
 ---
 6.PARAMETRAGE de ISS-DOMO pour Jeedom
 
-Editer le fichier ```/var/www/iss-domo/app/config/hardware.php``` ou ```/usr/share/nginx/www/iss-domo/app/config/hardware.php```
+Editer le fichier ```/var/www/iss-domo/app/config/hardware.php``` ou ```/usr/share/nginx/www/iss-domo/app/config/hardware.php``` en fonction de votre configuration.
 
 > sudo nano /var/www/iss-domo/app/config/hardware.php
 
@@ -140,7 +140,7 @@ ou
 
 Activer la gestion de Jeedom en indiquant ``` 'jeedom' => 1,``` et desactiver Domoticz si à 1.
 
-Editer le fichier ```/var/www/iss-domo/app/config/jeedom.php``` ou ```/usr/share/nginx/www/iss-domo/app/config/jeedom.php```
+Editer le fichier ```/var/www/iss-domo/app/config/jeedom.php``` ou ```/usr/share/nginx/www/iss-domo/app/config/jeedom.php``` en fonction de votre configuration.
 
 > sudo nano /var/www/iss-domo/app/config/jeedom.php
 
@@ -160,7 +160,10 @@ Modifier la ligne : ```api_key``` afin d'indiquer la clé API à votre serveur J
 
 Ajouter depuis l'application Imperihome un systeme "Imperihome Standard System"
 
-Indiquer en url en fonction de l'adresse de votre serveur ISS-DOMO : ```http://192.168.0.26:8000/```
+Indiquer en url en fonction de l'adresse de votre serveur ISS-DOMO : 
+
+- Pour un fonctionnement avec le service ISS-Domo : ```http://192.168.0.26:8000/```
+- Pour un fonctionnement avec Nginx : ```http://192.168.0.26/iss-domo/public/```
 
 ---
 ---
