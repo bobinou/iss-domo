@@ -17,7 +17,7 @@ class DomoticzController extends BaseController
 	public function system()
 	{
 		return Response::json(array (
-			'id' => 'ISS-Domo v3.0.0',
+			'id' => 'ISS-Domo v3.1.0',
 			'apiversion' => 1,
 		));
 	}
@@ -38,6 +38,29 @@ class DomoticzController extends BaseController
       {
          $jeedomfull['result'] = $jsonrpc->getResult();
          return $jeedomfull;
+      }
+      else
+      {
+         echo $jsonrpc -> getError();
+      }
+   }
+   
+      /**
+   *getjeedomscene.
+   *@returnstringJsonformattedsysteminformations.
+   */
+   public function getjeedomscene()
+   {
+      include_once 'jsonrpcClient.class.php';
+
+      $jeedomscene = array();
+
+      $jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'),Config::get('jeedom.api_key'));
+
+      if($jsonrpc -> sendRequest('scenario::all',array()))
+      {
+         $jeedomscene['result'] = $jsonrpc->getResult();
+         return $jeedomscene;
       }
       else
       {
@@ -69,14 +92,21 @@ class DomoticzController extends BaseController
    }
 
 	// Private function search  for Jeedom 
-	private static function recherche($fulldata, $infos, $cmd, $test)
-	{
+   private static function recherche($fulldata, $infos, $cmd, $test)
+   {
+      $autre = null;
       foreach ($fulldata['result'] as $data) {
          foreach ($data['eqLogics'] as $equipment) {
             foreach ($equipment['cmds'] as $command) {
                if ($cmd == null){
                   if ($command['id'] == $infos){
                      $id_retour = $command[$test];
+                     if(isset($equipment['configuration']['device'])){
+                        $autre = $equipment['configuration']['device'];
+                     }
+                     else {
+                        $autre = null;
+                     }
                   }
                }
                else {
@@ -87,8 +117,8 @@ class DomoticzController extends BaseController
             }
          }
       }
-      return $id_retour;
-	}
+      return array($id_retour,$autre);
+   }
 	
 	
 	/**
@@ -308,32 +338,60 @@ class DomoticzController extends BaseController
 	 */
 	public function action($deviceId, $actionName, $actionParam = null)
 	{
-		// file_put_contents('/var/www/laravel/export.log', $deviceId.'-'.$actionName.'-'.$actionParam."\n");
-		
+		//file_put_contents('/usr/share/nginx/www/iss-domo/export.log', $actionName);
 		//action for Jeedom
 		if (Config::get('hardware.jeedom') == 1){
+		
+		//*** For Scenes Jeedom***
+		if($actionName == 'launchScene'){	
+				$arraydeviceId = explode("-", $deviceId);
+				$deviceId = $arraydeviceId[0];
+		// Curl function
+		$url=Config::get('jeedom.jeedom_url')."?apikey=".Config::get('jeedom.api_key')."&type=scenario&id={$deviceId}&action=start";
+		$options=array(
+			CURLOPT_URL            => $url, 
+			CURLOPT_RETURNTRANSFER => true, 
+			CURLOPT_HEADER         => false 
+		);
+		$CURL=curl_init();
+		curl_setopt_array($CURL,$options);
+		$content=curl_exec($CURL);
+		curl_close($CURL);
+		// End curl function
+		}
 
-		include_once 'jsonrpcClient.class.php';
+      include_once 'jsonrpcClient.class.php';
 
-                $fulldata = $this->getjeedomfull();
-                if(isset($fulldata['result'])){
-                        $test = 'eqLogic_id';
-                  $cmd = null;
-                  $infos = self::recherche($fulldata, $deviceId, $cmd, $test);
-				}
-            
-            if (isset($infos)) {
+         $fulldata = $this->getjeedomfull();
+         if(isset($fulldata['result'])){
+               $test = 'eqLogic_id';
+               $cmd = null;
+               list($infos, $device_equip) = self::recherche($fulldata, $deviceId, $cmd, $test);
+         }
+         
+         if (isset($infos)) {
+            if ($device_equip == 'BeNeXt.BuiltInDimmer' and $actionName == 'setLevel'){
+               $test = 'id';
+               $cmd = 'Intensité';
+               list($ids, $autre) = self::recherche($fulldata, $infos, $cmd, $test);
+               if (isset($ids)) {
+                  $jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'),Config::get('jeedom.api_key'));
+                  if ($actionParam == 100) $actionParam = 99;
+                  $jsonrpc -> sendRequest('cmd::execCmd',array('id' => $ids, 'options' =>array('slider' => $actionParam)));
+               }
+            }
+            else {
                Switch ($actionName){
                   case 'setStatus' :
                      if ($actionParam == 1){
                         $test = 'id';
                         $cmd = 'On';
-                        $ids = self::recherche($fulldata, $infos, $cmd, $test);
+                        list($ids, $autre) = self::recherche($fulldata, $infos, $cmd, $test);
                      } elseif ($actionParam == 0){
                         
                         $test = 'id';
                         $cmd = 'Off';
-                        $ids = self::recherche($fulldata, $infos, $cmd, $test);
+                        list($ids, $autre) = self::recherche($fulldata, $infos, $cmd, $test);
                         
                      }
                      break;
@@ -341,23 +399,26 @@ class DomoticzController extends BaseController
                      if ($actionParam == 0){
                         $test = 'id';
                         $cmd = 'Down';
-                        $ids = self::recherche($fulldata, $infos, $cmd, $test);
+                        list($ids, $autre) = self::recherche($fulldata, $infos, $cmd, $test);
                      } elseif ($actionParam == 100){
                         $test = 'id';
                         $cmd = 'Up';
-                        $ids = self::recherche($fulldata, $infos, $cmd, $test);
+                        list($ids, $autre) = self::recherche($fulldata, $infos, $cmd, $test);
                      }
                      break;
                }
-            }
-            if (isset($ids)) {
-                  $jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'),Config::get('jeedom.api_key'));
+               if (isset($ids)) {
+               $jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'),Config::get('jeedom.api_key'));
 
-                  $jsonrpc -> sendRequest('cmd::execCmd',array('id' => $ids));
+               $jsonrpc -> sendRequest('cmd::execCmd',array('id' => $ids));
+               }
             }
+         }
+         
       
-		$infos = null;
-		$ids = null;
+         $infos = null;
+         $ids = null;
+		
         }
 		
 		// action for Domoticz
@@ -615,28 +676,54 @@ class DomoticzController extends BaseController
       //Device for Jeedom
 		if(Config::get('hardware.jeedom') == 1){
 		
-		$fulldata = $this->getjeedomfull();
-		if(isset($fulldata['result'])){
-			foreach ($fulldata['result'] as $data) {
-			
-				foreach ($data['eqLogics'] as $equipment) {
-				
-					if ($equipment['isVisible'] == 1){
-					
-						foreach ($equipment['cmds'] as $command) {
-											
-						$params = self::convertJeedomDeviceStatus($command);
-							
-						$output->devices[] = array (
-											'id' => $command['id'],
-											'name' => $equipment['name'].'-'.$command['name'],
-											'type' => self::convertJeedomDeviceType($command),
-											'room' => $data['id'],
-											'params' => (null !== $params) ? $params : array()
-											);
-											
-						}						
-					}
+      $fulldata = $this->getjeedomfull();
+      if(isset($fulldata['result'])){
+         foreach ($fulldata['result'] as $data) {
+         
+            foreach ($data['eqLogics'] as $equipment) {
+            
+               if ($equipment['isVisible'] == 1){
+                  if(isset($equipment['configuration']['device'])){
+                     $device_equip = $equipment['configuration']['device'];
+                  }
+                  else {
+                     $device_equip = null;
+                  }
+                  foreach ($equipment['cmds'] as $command) {
+                     if ($command['type'] == 'info'){         
+                        $params = self::convertJeedomDeviceStatus($command, $device_equip);
+                           
+                        $output->devices[] = array (
+                                       'id' => $command['id'],
+                                       'name' => $equipment['name'].'-'.$command['name'],
+                                       'type' => self::convertJeedomDeviceType($command, $device_equip),
+                                       'room' => $data['id'],
+                                       'params' => (null !== $params) ? $params : array()
+                                       );
+                     }
+                     
+                  }                  
+               }
+            }
+         }
+      }
+		
+		//Add Scenes Jeedom
+		$scenes = $this->getjeedomscene();
+		if(isset($scenes['result'])){
+			foreach ($scenes['result'] as $sce) {
+				if ($sce['isActive'] == 1){
+				$output->devices[] = array(
+					'id' => $sce['id'].'-scene',
+					'name' => $sce['name'],
+					'type' => 'DevScene',
+					'room' => $sce['object_id'],
+					'params' => array( array(
+						'key' => 'LastRun',
+						'value' => $sce['lastLaunch'],
+						),
+						),
+					);
 				}
 			}
 		}
@@ -1111,46 +1198,53 @@ class DomoticzController extends BaseController
    /**
    *DevicetypeforJeedom
    */
-   private static function convertJeedomDeviceType($datadevice)
+   private static function convertJeedomDeviceType($datadevice, $device_equip)
    {
-      switch($datadevice['type']){
-         case'info':
-            switch($datadevice['subType']){
-               case'numeric':
-                  switch($datadevice['unite']){
-                     case'°C':
+    if($device_equip == 'BeNeXt.BuiltInDimmer' and $datadevice['name']=='Etat'){
+         $newType='DevDimmer';
+   }
+   else{
+           switch($datadevice['type']){
+             case'info':
+               switch($datadevice['subType']){
+                  case'numeric':
+                    switch($datadevice['unite']){
+                      case'°C':
                         $newType='DevTemperature';
                         break;
-                     case'%':
+                      case'%':
                         $newType='DevHygrometry';
                         break;
-                     case'Pa':
+                      case'Pa':
                         $newType='DevPressure';
                         break;
-                     case'km/h':
+                      case'km/h':
                         $newType='DevWind';
                         break;
-                     case'mm/h':
+                      case'mm/h':
                         $newType='DevRain';
                         break;
-                     case'mm':
+                      case'mm':
                         $newType='DevRain';
                         break;
-                     case'Lux':
+                      case'Lux':
                         $newType='DevLuminosity';
                         break;
-                     case'W':
+                      case'W':
                         $newType='DevElectricity';
                         break;
-                     default:
+                     case'KwH':
+                        $newType='DevElectricity';
+                        break;
+                      default:
                         if(isset($datadevice['eqType'])){
                            switch($datadevice['eqType']){
-                              case'Store':
-                                 $newType='DevShutter';
-                                 break;
-                              default:
-                                 $newType='DevGenericSensor';
-                                 break;
+                             case'Store':
+                               $newType='DevShutter';
+                               break;
+                             default:
+                               $newType='DevGenericSensor';
+                               break;
                            }
                         }
                         else {
@@ -1158,12 +1252,12 @@ class DomoticzController extends BaseController
                            break;
                         }
                         break;
-                  }
-                  
-                  break;
-               case'binary':
-                  if(isset($datadevice['template']['dashboard'])){
-                     switch($datadevice['template']['dashboard']){
+                    }
+                    
+                    break;
+                  case'binary':
+                    if(isset($datadevice['template']['dashboard'])){
+                      switch($datadevice['template']['dashboard']){
                         case'door':
                         case'window':
                         case'porte_garage':
@@ -1181,22 +1275,24 @@ class DomoticzController extends BaseController
                         default:
                            $newType='DevSwitch';
                            break;
-                     }
-                  }
-                  else{
-                     $newType='DevSwitch';
-                     break;
-                  }
-                  break;
-               default:
-                  $newType='DevGenericSensor';
-                  break;
-            }
-            break;
-         default:
-            $newType='DevGenericSensor';
-            break;
-      }
+                      }
+                    }
+                    else{
+                      $newType='DevSwitch';
+                      break;
+                    }
+                    break;
+                  default:
+                    $newType='DevGenericSensor';
+                    break;
+               }
+               break;
+             default:
+               $newType='DevGenericSensor';
+               break;
+           }
+           
+   }
       return $newType;
 
    }
@@ -1204,8 +1300,16 @@ class DomoticzController extends BaseController
    /**
    *ParamforJeedom
    */
-   private static function convertJeedomDeviceStatus($datadevice){
-
+   private static function convertJeedomDeviceStatus($datadevice, $device_equip){
+   if($device_equip == 'BeNeXt.BuiltInDimmer' and $datadevice['name']=='Etat'){
+      $newType=array(array(
+         'key'=>'Level',
+         'value'=>$datadevice['state'],
+         'unit'=>'%',
+       ));
+   }
+   
+   else{
       switch($datadevice['type']){
          case'info':
          switch($datadevice['subType']){
@@ -1216,6 +1320,7 @@ class DomoticzController extends BaseController
                         'key'=>'Value',
                         'value'=>$datadevice['state'],
                         'unit'=>'°C',
+						'graphable' => '0' == $datadevice['isHistorized'] ? 'false' : 'true',
                      ));
                      break;
                   case'%':
@@ -1223,6 +1328,7 @@ class DomoticzController extends BaseController
                         'key'=>'Value',
                         'value'=>$datadevice['state'],
                         'unit'=>'%',
+						'graphable' => '0' == $datadevice['isHistorized'] ? 'false' : 'true',
                      ));
                      break;
                   case'Pa':
@@ -1230,6 +1336,7 @@ class DomoticzController extends BaseController
                         'key'=>'Value',
                         'value'=>$datadevice['state'],
                         'unit'=>'mbar',
+						'graphable' => '0' == $datadevice['isHistorized'] ? 'false' : 'true',
                      ));
                      break;
                   case'km/h':
@@ -1249,6 +1356,13 @@ class DomoticzController extends BaseController
                            'key'=>'ConsoTotal',
                            'value'=>$datadevice['state'],
                            'unit'=>'kWh',
+                     ));
+                     break;
+              case'KwH':
+                     $newType=array(array(
+                           'key'=>'Watts',
+                           'value'=>$datadevice['state'],
+                           'unit'=>'KwH',
                      ));
                      break;
                   case'mm/h':
@@ -1381,6 +1495,7 @@ class DomoticzController extends BaseController
             $newType=null;
             break;
       }
+   }
       return $newType;
 
    }
