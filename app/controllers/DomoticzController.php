@@ -17,7 +17,7 @@ class DomoticzController extends BaseController
 	public function system()
 	{
 		return Response::json(array (
-			'id' => 'ISS-Domo v3.1.0',
+			'id' => 'ISS-Domo v3.1.1',
 			'apiversion' => 1,
 		));
 	}
@@ -370,7 +370,7 @@ class DomoticzController extends BaseController
          }
          
          if (isset($infos)) {
-            if ($device_equip == 'BeNeXt.BuiltInDimmer' and $actionName == 'setLevel'){
+            if (($device_equip == 'BeNeXt.BuiltInDimmer' or $device_equip == 'fibaro.fgd211') and $actionName == 'setLevel'){
                $test = 'id';
                $cmd = 'Intensité';
                list($ids, $autre) = self::recherche($fulldata, $infos, $cmd, $test);
@@ -1200,7 +1200,7 @@ class DomoticzController extends BaseController
    */
    private static function convertJeedomDeviceType($datadevice, $device_equip)
    {
-    if($device_equip == 'BeNeXt.BuiltInDimmer' and $datadevice['name']=='Etat'){
+    if(($device_equip == 'BeNeXt.BuiltInDimmer' or $device_equip == 'fibaro.fgd211') and $datadevice['name']=='Etat'){
          $newType='DevDimmer';
    }
    else{
@@ -1301,7 +1301,7 @@ class DomoticzController extends BaseController
    *ParamforJeedom
    */
    private static function convertJeedomDeviceStatus($datadevice, $device_equip){
-   if($device_equip == 'BeNeXt.BuiltInDimmer' and $datadevice['name']=='Etat'){
+   if(($device_equip == 'BeNeXt.BuiltInDimmer' or $device_equip == 'fibaro.fgd211') and $datadevice['name']=='Etat'){
       $newType=array(array(
          'key'=>'Level',
          'value'=>$datadevice['state'],
