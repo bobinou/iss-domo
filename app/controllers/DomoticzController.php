@@ -17,92 +17,79 @@ class DomoticzController extends BaseController
 	public function system()
 	{
 		return Response::json(array (
-			'id' => 'ISS-Domo v2.0.1',
+			'id' => 'ISS-Domo v3.0.0',
 			'apiversion' => 1,
 		));
 	}
 
-	/**
-	* Get Jeedom data.
-	* @return string Json formatted system informations.
-	*/
-	public function getjeedomroom()
+   /**
+   *GetJeedomFULLdata.
+   *@returnstringJsonformattedsysteminformations.
+   */
+   public function getjeedomfull()
+   {
+      include_once 'jsonrpcClient.class.php';
+
+      $jeedomfull = array();
+
+      $jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'),Config::get('jeedom.api_key'));
+
+      if($jsonrpc -> sendRequest('object::full',array()))
+      {
+         $jeedomfull['result'] = $jsonrpc->getResult();
+         return $jeedomfull;
+      }
+      else
+      {
+         echo $jsonrpc -> getError();
+      }
+   }
+
+   /**
+   *getjeedomrooms. Retreive Rooms for Jeedom
+   *@returnstringJsonformattedsysteminformations.
+   */
+   public function getjeedomrooms()
+   {
+      include_once 'jsonrpcClient.class.php';
+
+      $jeedomrooms = array();
+
+      $jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'),Config::get('jeedom.api_key'));
+
+      if($jsonrpc -> sendRequest('object::all',array()))
+      {
+         $jeedomrooms['result'] = $jsonrpc->getResult();
+         return $jeedomrooms;
+      }
+      else
+      {
+         echo $jsonrpc -> getError();
+      }
+   }
+
+	// Private function search  for Jeedom 
+	private static function recherche($fulldata, $infos, $cmd, $test)
 	{
-		include_once 'jsonrpcClient.class.php';
-		
-		$jeedomroom = array();
-
-		$jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'), Config::get('jeedom.api_key'));
-
-		if($jsonrpc->sendRequest('object::all', array()))
-		{
-			$jeedomroom['result'] = $jsonrpc->getResult();
-			//return Response::json($jsonrpc->getResult());
-			//return Response::json($jeedomroom);
-			return $jeedomroom;
-		}
-		else
-		{
-		   echo $jsonrpc->getError();
-		}
+      foreach ($fulldata['result'] as $data) {
+         foreach ($data['eqLogics'] as $equipment) {
+            foreach ($equipment['cmds'] as $command) {
+               if ($cmd == null){
+                  if ($command['id'] == $infos){
+                     $id_retour = $command[$test];
+                  }
+               }
+               else {
+                  if ($command['eqLogic_id'] == $infos and $command['name'] == $cmd){
+                     $id_retour = $command[$test];
+                  }
+               }
+            }
+         }
+      }
+      return $id_retour;
 	}
 	
-	public function getjeedomdevice()
-	{
-		include_once 'jsonrpcClient.class.php';
-		
-		$jeedomroom = array();
-
-		$jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'), Config::get('jeedom.api_key'));
-
-		if($jsonrpc->sendRequest('eqLogic::all', array()))
-		{
-			$jeedomroom['result'] = $jsonrpc->getResult();
-			return $jeedomroom;
-		}
-		else
-		{
-		   echo $jsonrpc->getError();
-		}
-	}
-	
-	public function getjeedomdata()
-	{
-		include_once 'jsonrpcClient.class.php';
-		
-		$jeedomroom = array();
-
-		$jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'), Config::get('jeedom.api_key'));
-
-		if($jsonrpc->sendRequest('cmd::all', array()))
-		{
-			$jeedomroom['result'] = $jsonrpc->getResult();
-			return $jeedomroom;
-		}
-		else
-		{
-		   echo $jsonrpc->getError();
-		}
-	}
-	
-	public function getjeedomdataB($jeedomdataid)
-	{
-		include_once 'jsonrpcClient.class.php';
-		
-		$jeedomroom = array();
-
-		$jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'), Config::get('jeedom.api_key'));
-
-		if($jsonrpc->sendRequest('cmd::execCmd', array('id' => $jeedomdataid)))
-		{
-			$jeedomroom = $jsonrpc->getResult();
-			return $jeedomroom;
-		}
-		else
-		{
-		   echo $jsonrpc->getError();
-		}
-	}
 	
 	/**
 	* Get XBMC data.
@@ -237,18 +224,18 @@ class DomoticzController extends BaseController
 		$output = new stdClass();
 		$output->rooms = array();
 		
-		// For Jeedom Rooms
-		if(Config::get('hardware.jeedom') == 1){
-		$input = $this->getjeedomroom();
-			if(isset($input['result'])){
-				foreach ($input['result'] as $jeedomrooms) {
-				$output->rooms[] = array (
-				'id' => $jeedomrooms['id'],
-				'name' => $jeedomrooms['name'],
-				);
-				}	
-			}
-		}
+      //ForJeedomRooms
+      if (Config::get('hardware.jeedom') == 1){
+         $input = $this -> getjeedomrooms();
+         if (isset ($input['result'])){
+            foreach ($input['result'] as $jeedomrooms){
+               $output -> rooms[] = array(
+               'id' => $jeedomrooms['id'],
+               'name' => $jeedomrooms['name'],
+               );
+            }
+         }
+      }
 		
 		// For Domoticz Rooms
 		if(Config::get('hardware.domoticz') == 1){
@@ -297,6 +284,9 @@ class DomoticzController extends BaseController
 	public function device_history($deviceId, $paramKey, $startdate, $enddate)
 	{
 		//file_put_contents('/home/pi/iss-domo-beta/export.log', $deviceId.'-'.$paramKey.'-'.$startdate.'-'.$enddate."\n");
+		
+		//history for Domoticz
+		if(Config::get('hardware.domoticz') == 1){
 		$db = new SQLite3(Config::get('iss-domo.path_to_db'));
 		$result = $db->query('SELECT * FROM domoticz_history WHERE idx = "'.$deviceId.'" AND key = "'.strtolower($paramKey).'" AND date >= "'.$startdate.'" AND date <= "'.$enddate.'"');
 		$row = array();
@@ -309,16 +299,69 @@ class DomoticzController extends BaseController
          } 
 		$ckoi = json_encode(array('values'=>$row));
 		print_r($ckoi);
-	
+		}
 	}
 	
 	/**
 	 * Call for an action on the device identified by $deviceId.
 	 * @return string Json formated action status.
 	 */
-	public function device($deviceId, $actionName, $actionParam = null)
+	public function action($deviceId, $actionName, $actionParam = null)
 	{
 		// file_put_contents('/var/www/laravel/export.log', $deviceId.'-'.$actionName.'-'.$actionParam."\n");
+		
+		//action for Jeedom
+		if (Config::get('hardware.jeedom') == 1){
+
+		include_once 'jsonrpcClient.class.php';
+
+                $fulldata = $this->getjeedomfull();
+                if(isset($fulldata['result'])){
+                        $test = 'eqLogic_id';
+                  $cmd = null;
+                  $infos = self::recherche($fulldata, $deviceId, $cmd, $test);
+				}
+            
+            if (isset($infos)) {
+               Switch ($actionName){
+                  case 'setStatus' :
+                     if ($actionParam == 1){
+                        $test = 'id';
+                        $cmd = 'On';
+                        $ids = self::recherche($fulldata, $infos, $cmd, $test);
+                     } elseif ($actionParam == 0){
+                        
+                        $test = 'id';
+                        $cmd = 'Off';
+                        $ids = self::recherche($fulldata, $infos, $cmd, $test);
+                        
+                     }
+                     break;
+                  case 'setLevel' :               
+                     if ($actionParam == 0){
+                        $test = 'id';
+                        $cmd = 'Down';
+                        $ids = self::recherche($fulldata, $infos, $cmd, $test);
+                     } elseif ($actionParam == 100){
+                        $test = 'id';
+                        $cmd = 'Up';
+                        $ids = self::recherche($fulldata, $infos, $cmd, $test);
+                     }
+                     break;
+               }
+            }
+            if (isset($ids)) {
+                  $jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'),Config::get('jeedom.api_key'));
+
+                  $jsonrpc -> sendRequest('cmd::execCmd',array('id' => $ids));
+            }
+      
+		$infos = null;
+		$ids = null;
+        }
+		
+		// action for Domoticz
+		if(Config::get('hardware.domoticz') == 1){
 		//*** For switchs, Dimmer, Lock ***
 		if($actionName == 'setStatus' OR $actionName == 'pulseShutter'){
 			if(strpos($deviceId, 'noroom')){
@@ -388,9 +431,10 @@ class DomoticzController extends BaseController
 
 		return Response::json($output);
 		}
-		
+		}
 		
 		//*** For MOVIES from XBMC ***
+		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_movies') == 1){
 		// Launch Movie to XBMC where type command launchScene
 		if($actionName == 'launchScene' AND strpos($deviceId, 'xbmove')){
 		
@@ -429,11 +473,12 @@ class DomoticzController extends BaseController
 			$q->set($k, $v);
 		}
 		$response = $request->send();
-		
+		}
 		}
 		
 		
 		//*** For SONGS from XBMC ***
+		if(Config::get('hardware.xbmc') == 1 AND Config::get('xbmc.xbmc_songs') == 1){
 		// Launch Songs to XBMC where type command launchScene
 		if($actionName == 'launchScene' AND strpos($deviceId, 'xbsong')){
 		
@@ -472,7 +517,7 @@ class DomoticzController extends BaseController
 			$q->set($k, $v);
 		}
 		$response = $request->send();
-		
+		}
 		}
 		
 		
@@ -567,35 +612,36 @@ class DomoticzController extends BaseController
 		$output = new stdClass();
 		$output->devices = array();
 		
-		//Device for Jeedom
+      //Device for Jeedom
 		if(Config::get('hardware.jeedom') == 1){
-		$input = $this->getjeedomdevice();
-		if(isset($input['result'])){
-			foreach ($input['result'] as $device) {
+		
+		$fulldata = $this->getjeedomfull();
+		if(isset($fulldata['result'])){
+			foreach ($fulldata['result'] as $data) {
 			
-				$datas = $this->getjeedomdata();
+				foreach ($data['eqLogics'] as $equipment) {
 				
-				if(isset($datas['result'])){
-					foreach ($datas['result'] as $datadevice) {
-						if($device['id'] == $datadevice['eqLogic_id']){
-						
-							$datasB = $this->getjeedomdataB($datadevice['id']);
-							$params = self::convertJeedomDeviceStatus($datadevice,$datasB);
+					if ($equipment['isVisible'] == 1){
+					
+						foreach ($equipment['cmds'] as $command) {
+											
+						$params = self::convertJeedomDeviceStatus($command);
 							
-									$output->devices[] = array (
-											'id' => $datadevice['id'],
-											'name' => $device['name'].'-'.$datadevice['name'],
-											'type' => self::convertJeedomDeviceType($datadevice),
-											'room' => $device['object_id'],
+						$output->devices[] = array (
+											'id' => $command['id'],
+											'name' => $equipment['name'].'-'.$command['name'],
+											'type' => self::convertJeedomDeviceType($command),
+											'room' => $data['id'],
 											'params' => (null !== $params) ? $params : array()
 											);
-						}
-						
+											
+						}						
 					}
 				}
 			}
 		}
-		}
+						
+	}
 		
 		// Device for Domoticz
 		if(Config::get('hardware.domoticz') == 1){
@@ -1062,133 +1108,282 @@ class DomoticzController extends BaseController
 
 	}
 
-	/**
-	 * Device type for Jeedom
-	 */
-	private static function convertJeedomDeviceType ($datadevice)
-	{
-	switch ($datadevice['type']) {
-		case 'info':
-			switch ($datadevice['subType']) {
-				case 'binary':
-					$newType = 'DevSwitch';
-					break;
-				case 'numeric':
-					switch ($datadevice['unite']) {
-						case '°C':
-							$newType = 'DevTemperature';
-							break;
-						case '%':
-							$newType = 'DevHygrometry';
-							break;
-						case 'Pa':
-							$newType = 'DevPressure';
-							break;
-						case 'km/h':
-							$newType = 'DevWind';
-							break;
-						case 'W':
-							$newType = 'DevElectricity';
-							break;
-						default:
-							$newType = 'DevGenericSensor';
-							break;
-					}
-					break;
-				default:
-					$newType = 'DevGenericSensor';
-					break;
-			}
-		break;
-		default:
-			$newType = 'DevGenericSensor';
-			break;
-	}
-	return $newType;
-	
-	}
-	
-	/**
-	 * Param for Jeedom
-	 */
-	private static function convertJeedomDeviceStatus ($datadevice,$datasB)
-	{
-	switch ($datadevice['type']) {
-		case 'info':
-			switch ($datadevice['subType']) {
-				case 'binary':
-					$newType = array( array(
-							'key' => 'Status',
-							'value' => $datasB,
-						));
-					break;
-				case 'numeric':
-					switch ($datadevice['unite']) {
-						case '°C':
-							$newType = array( array(
-										'key' => 'Value',
-										'value' => $datasB,
-										'unit' => '°C',
-										));
-							break;
-						case '%':
-							$newType = array( array(
-										'key' => 'Value',
-										'value' => $datasB,
-										'unit' => '%',
-										));
-							break;
-						case 'Pa':
-							$newType = array( array(
-											'key' => 'Value',
-											'value' => $datasB,
-											'unit' => 'mbar',
-											));
-							break;
-						case 'km/h':
-							$newType = array( array(
-											'key' => 'Speed',
-											'value' => $datasB,
-											'unit' => 'km/h',
-											));
-							break;
-						case 'W':
-							$newType = array( array(
-											'key' => 'Watts',
-											'value' => $datasB,
-											'unit' => 'Watt',
-											),
-											array(
-											'key' => 'ConsoTotal',
-											'value' => $datasB,
-											'unit' => 'kWh',
-											));
-							break;
-						default:
-							$newType = array( array(
-											'key' => 'Value',
-											'value' => $datasB,
-											'unit' => '',
-											));
-							break;
-					}
-					break;
-				default:
-					$newType = array( array(
-											'key' => 'Value',
-											'value' => $datasB,
-											'unit' => '',
-											));
-					break;
-			}
-		break;
-		default:
-			$newType = null;
-			break;
-	}
-	return $newType;
-	
-	}
+   /**
+   *DevicetypeforJeedom
+   */
+   private static function convertJeedomDeviceType($datadevice)
+   {
+      switch($datadevice['type']){
+         case'info':
+            switch($datadevice['subType']){
+               case'numeric':
+                  switch($datadevice['unite']){
+                     case'°C':
+                        $newType='DevTemperature';
+                        break;
+                     case'%':
+                        $newType='DevHygrometry';
+                        break;
+                     case'Pa':
+                        $newType='DevPressure';
+                        break;
+                     case'km/h':
+                        $newType='DevWind';
+                        break;
+                     case'mm/h':
+                        $newType='DevRain';
+                        break;
+                     case'mm':
+                        $newType='DevRain';
+                        break;
+                     case'Lux':
+                        $newType='DevLuminosity';
+                        break;
+                     case'W':
+                        $newType='DevElectricity';
+                        break;
+                     default:
+                        if(isset($datadevice['eqType'])){
+                           switch($datadevice['eqType']){
+                              case'Store':
+                                 $newType='DevShutter';
+                                 break;
+                              default:
+                                 $newType='DevGenericSensor';
+                                 break;
+                           }
+                        }
+                        else {
+                           $newType='DevGenericSensor';
+                           break;
+                        }
+                        break;
+                  }
+                  
+                  break;
+               case'binary':
+                  if(isset($datadevice['template']['dashboard'])){
+                     switch($datadevice['template']['dashboard']){
+                        case'door':
+                        case'window':
+                        case'porte_garage':
+                           $newType='DevDoor';
+                           break;
+                        case'fire':
+                           $newType='DevSmoke';
+                           break;
+                        case'presence':
+                           $newType='DevMotion';
+                           break;
+                        case'store':
+                           $newType='DevShutter';
+                           break;
+                        default:
+                           $newType='DevSwitch';
+                           break;
+                     }
+                  }
+                  else{
+                     $newType='DevSwitch';
+                     break;
+                  }
+                  break;
+               default:
+                  $newType='DevGenericSensor';
+                  break;
+            }
+            break;
+         default:
+            $newType='DevGenericSensor';
+            break;
+      }
+      return $newType;
+
+   }
+
+   /**
+   *ParamforJeedom
+   */
+   private static function convertJeedomDeviceStatus($datadevice){
+
+      switch($datadevice['type']){
+         case'info':
+         switch($datadevice['subType']){
+            case'numeric':
+               switch($datadevice['unite']){
+                  case'°C':
+                     $newType=array(array(
+                        'key'=>'Value',
+                        'value'=>$datadevice['state'],
+                        'unit'=>'°C',
+                     ));
+                     break;
+                  case'%':
+                     $newType=array(array(
+                        'key'=>'Value',
+                        'value'=>$datadevice['state'],
+                        'unit'=>'%',
+                     ));
+                     break;
+                  case'Pa':
+                     $newType=array(array(
+                        'key'=>'Value',
+                        'value'=>$datadevice['state'],
+                        'unit'=>'mbar',
+                     ));
+                     break;
+                  case'km/h':
+                     $newType=array(array(
+                        'key'=>'Speed',
+                        'value'=>$datadevice['state'],
+                        'unit'=>'km/h',
+                     ));
+                     break;
+                  case'W':
+                     $newType=array(array(
+                           'key'=>'Watts',
+                           'value'=>$datadevice['state'],
+                           'unit'=>'Watt',
+                           ),
+                        array(
+                           'key'=>'ConsoTotal',
+                           'value'=>$datadevice['state'],
+                           'unit'=>'kWh',
+                     ));
+                     break;
+                  case'mm/h':
+                     $newType=array(array(
+                        'key'=>'Value',
+                        'value'=>$datadevice['state'],
+                        'unit'=>'mm/h',
+                     ));
+                     break;
+                  case'mm':
+                     $newType=array(array(
+                        'key'=>'Accumulation',
+                        'value'=>$datadevice['state'],
+                        'unit'=>'mm',
+                     ));
+                     break;
+                  case'Lux':
+                     $newType=array(array(
+                        'key'=>'Value',
+                        'value'=>$datadevice['state'],
+                        'unit'=>'lux',
+                     ));
+                     break;
+                  default:
+                     $newType=array(array(
+                        'key'=>'Value',
+                        'value'=>$datadevice['state'],
+                        'unit'=>'',
+                     ));
+                     break;
+               }
+               if(isset($datadevice['template']['dashboard'])){
+                  switch($datadevice['template']['dashboard']){
+                     case'store':
+                        $newType=array(array(
+                              'key'=>'Level',
+                              'value'=>$datadevice['state'],
+                           ),
+                           array(
+                              'key'=>'stopable',
+                              'value'=>'1',
+                           ),
+                           array(
+                              'key'=>'pulseable',
+                              'value'=>'0',
+                        ));
+                        break;
+                  }
+               }
+               break;
+            case'binary':
+               if(isset($datadevice['template']['dashboard'])){
+                  switch($datadevice['template']['dashboard']){
+                     case'door':
+                     case'window':
+                     case'porte_garage':
+                     case'alert':
+                     case'fire':
+                     case'presence':
+                     case'vibration':
+                        $newType=array(array(
+                           'key'=>'Tripped',
+                           'value'=>$datadevice['state'],
+                        ));
+                        break;
+                     case'lock':
+                        $newType=array(array(
+                              'key'=>'Tripped',
+                              'value'=>$datadevice['state'],
+                           ),
+                           array(
+                              'key'=>'Armed',
+                              'value'=>'1',
+                           ),
+                           array(
+                              'key'=>'Ackable',
+                              'value'=>'1',
+                           ),
+                           array(
+                              'key'=>'Armable',
+                              'value'=>'1',
+                        ));
+                        break;
+                     case'store':
+                        $newType=array(array(
+                              'key'=>'Level',
+                              'value'=>$datadevice['state'],
+                           ),
+                           array(
+                              'key'=>'stopable',
+                              'value'=>'1',
+                           ),
+                           array(
+                              'key'=>'pulseable',
+                              'value'=>'0',
+                        ));
+                        break;
+                     case'light':
+                     case'prise':
+                        $newType=array(array(
+                           'key'=>'Status',
+                           'value'=>$datadevice['state'],
+                        ));
+                        break;
+                     default:
+                        $newType=array(array(
+                           'key'=>'Status',
+                           'value'=>$datadevice['state'],
+                        ));
+                        break;
+                  }
+               }
+            else{
+               $newType=array(array(
+                  'key'=>'Status',
+                  'value'=>$datadevice['state'],
+               ));
+            }
+            break;
+            default:
+               $newType=array(array(
+                  'key'=>'Value',
+                  'value'=>$datadevice['state'],
+                  'unit'=>'',
+               ));
+            break;
+         }
+         break;
+         default:
+            $newType=null;
+            break;
+      }
+      return $newType;
+
+   }
 	
 	/**
 	 * Device type for Domoticz
