@@ -39,7 +39,7 @@ AU CHOIX SOIT UTILISATION DE NGINX (3) / OU UTILISATION DU SERVICE ISS-DOMO(4)
 
 Copier iss-domo dans le répertoire www de Nginx iss-domo :
 
-> sudo cp -R /var/www/iss-domo/ /usr/share/nginx/www/
+> sudo mv /var/www/iss-domo/ /usr/share/nginx/www/
 
 Appliquer les droits :
 
@@ -138,7 +138,7 @@ ou
 
 > sudo nano /usr/share/nginx/www/iss-domo/app/config/hardware.php
 
-Activer la gestion de Jeedom en indiquant ``` 'jeedom' => 1,``` et desactiver Domoticz si à 1.
+Activer la gestion de Jeedom en indiquant ``` 'jeedom' => 1,``` et desactiver Domoticz ``` 'domoticz' => 0,```.
 
 Editer le fichier ```/var/www/iss-domo/app/config/jeedom.php``` ou ```/usr/share/nginx/www/iss-domo/app/config/jeedom.php``` en fonction de votre configuration.
 
@@ -169,7 +169,13 @@ Indiquer en url en fonction de l'adresse de votre serveur ISS-DOMO :
 ---
 8.Mise a jour de ISS-DOMO
 
+Pour le service ISS-Domo :
+
 > cd /var/www/iss-domo/ && sudo git pull
+
+Pour ISS-Domo sur Nginx :
+
+> cd /usr/share/nginx/www/iss-domo/ && sudo git pull
 
 La configuration est conservée.
 
