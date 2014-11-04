@@ -23,3 +23,5 @@ Route::get('xbmcsongs', 'DomoticzController@getxbmcsongs');
 //Routes test Jeedom
 Route::get('jeedomroom', 'DomoticzController@getjeedomrooms');
 Route::get('jeedomfull', 'DomoticzController@getjeedomfull');
+Route::get('jeedomscene', 'DomoticzController@getjeedomscene');
+Route::get('jeedomhistory', 'DomoticzController@getjeedomhistory');
