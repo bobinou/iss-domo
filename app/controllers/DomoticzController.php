@@ -17,7 +17,7 @@ class DomoticzController extends BaseController
 	public function system()
 	{
 		return Response::json(array (
-			'id' => 'ISS-Domo v3.1.1',
+			'id' => 'ISS-Domo v3.2.0',
 			'apiversion' => 1,
 		));
 	}
@@ -61,6 +61,32 @@ class DomoticzController extends BaseController
       {
          $jeedomscene['result'] = $jsonrpc->getResult();
          return $jeedomscene;
+      }
+      else
+      {
+         echo $jsonrpc -> getError();
+      }
+   }
+   
+   /**
+   *getjeedomhistory.
+   *@returnstringJsonformattedsysteminformations.
+   */
+   public function getjeedomhistory($deviceId, $startdate, $enddate)
+   {
+		$startdatejeedom = date('Y-m-d H:i:s', ($startdate / 1000));
+		$enddatejeedom = date('Y-m-d H:i:s', ($enddate / 1000));
+   
+      include_once 'jsonrpcClient.class.php';
+
+      $jeedomhistory = array();
+
+      $jsonrpc = new jsonrpcClient(Config::get('jeedom.jeedom_url'),Config::get('jeedom.api_key'));
+
+      if($jsonrpc -> sendRequest('cmd::getHistory',array('id' => $deviceId, 'startTime' => $startdatejeedom, 'endTime' => $enddatejeedom)))
+      {
+         $jeedomhistory['result'] = $jsonrpc->getResult();
+         return $jeedomhistory;
       }
       else
       {
@@ -329,6 +355,21 @@ class DomoticzController extends BaseController
          } 
 		$ckoi = json_encode(array('values'=>$row));
 		print_r($ckoi);
+		}
+		
+		//history for Jeedom
+		if(Config::get('hardware.jeedom') == 1){
+			$history = $this->getjeedomhistory($deviceId, $startdate, $enddate);
+			if(isset($history['result'])){
+				foreach ($history['result'] as $histo) {
+					$milliseconds = round(strtotime($histo['datetime']) * 1000);
+					$output->values[] = array (
+                                       'date' => $milliseconds,
+                                       'value' => $histo['value'],
+                                       );				   
+				}
+			}
+			return Response::json($output);
 		}
 	}
 	
@@ -1363,6 +1404,7 @@ class DomoticzController extends BaseController
                            'key'=>'Watts',
                            'value'=>$datadevice['state'],
                            'unit'=>'KwH',
+						   'graphable' => '0' == $datadevice['isHistorized'] ? 'false' : 'true',
                      ));
                      break;
                   case'mm/h':
@@ -1377,6 +1419,7 @@ class DomoticzController extends BaseController
                         'key'=>'Accumulation',
                         'value'=>$datadevice['state'],
                         'unit'=>'mm',
+						'graphable' => '0' == $datadevice['isHistorized'] ? 'false' : 'true',
                      ));
                      break;
                   case'Lux':
@@ -1384,6 +1427,7 @@ class DomoticzController extends BaseController
                         'key'=>'Value',
                         'value'=>$datadevice['state'],
                         'unit'=>'lux',
+						'graphable' => '0' == $datadevice['isHistorized'] ? 'false' : 'true',
                      ));
                      break;
                   default:
