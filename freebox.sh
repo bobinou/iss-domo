@@ -7,9 +7,9 @@
 ###
 # YOU NEED TO CHANGE VALUE FOR YOUR CONFIGURATION
 # ISS-Domo Server
-ISSDOMO_SERVER="192.168.0.26:8000"
+ISSDOMO_SERVER="192.168.0.x:8000"
 # Domoticz server
-DOMOTICZ_SERVER="192.168.0.26:8180"
+DOMOTICZ_SERVER="192.168.0.x:8080"
 #
 # Freebox Server Temp SW idx
 FREE_SERV_TEMP_SW="29"
@@ -30,19 +30,19 @@ FREE_SERV_FAN="32"
 curl --silent http://$ISSDOMO_SERVER/freebox > freebox_server.txt
 
 # Get Temp SW
-TEMP_SW=$(cat freebox_server.txt | awk -F"," '{print $5}' | awk -F":" '{print $2}')
+TEMP_SW=$(cat freebox_server.txt | awk -F"," '{print $6}' | awk -F":" '{print $2}')
 echo $TEMP_SW
 
 # Get Temp CPU B
-TEMP_CPU_B=$(cat freebox_server.txt | awk -F"," '{print $8}' | awk -F":" '{print $2}')
+TEMP_CPU_B=$(cat freebox_server.txt | awk -F"," '{print $9}' | awk -F":" '{print $2}')
 echo $TEMP_CPU_B
 
 # Get Temp CPU M
-TEMP_CPU_M=$(cat freebox_server.txt | awk -F"," '{print $9}' | awk -F":" '{print $2}')
+TEMP_CPU_M=$(cat freebox_server.txt | awk -F"," '{print $10}' | awk -F":" '{print $2}')
 echo $TEMP_CPU_M
 
 # Get Fan
-FAN=$(cat freebox_server.txt | awk -F"," '{print $4}' | awk -F":" '{print $2}')
+FAN=$(cat freebox_server.txt | awk -F"," '{print $5}' | awk -F":" '{print $2}')
 echo $FAN
 
 # Send data to Domoticz
