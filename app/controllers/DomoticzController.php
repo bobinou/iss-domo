@@ -1686,7 +1686,7 @@ private static function convertDeviceStatus ($device)
 					case 'Door Lock':
 						$output = array( array(
 							'key' => 'Tripped',
-							'value' => 'Off' == $device['Status'] ? '0' : '1',
+							'value' => 'Closed' == $device['Status'] ? '0' : '1',
 						),
 						array(
 							'key' => 'Armed',
