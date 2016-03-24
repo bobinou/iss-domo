@@ -473,7 +473,7 @@ class DomoticzController extends BaseController
 		$actionName = 'setStatus' == $actionName ? 'switchlight' : $actionName;
 		$actionParam = '0' == $actionParam ? 'Off' : 'On';
 		$client = $this->getClient();
-		$request = $client->getClient()->createRequest('GET', get_url(Config::get('iss-domo.domoticz_url'), "json.htm?type=command&param={$actionName}&idx={$deviceId}}&switchcmd=$actionParam"));
+		$request = $client->getClient()->createRequest('GET', get_url(Config::get('iss-domo.domoticz_url'), "json.htm?type=command&param={$actionName}&idx={$deviceId}&switchcmd=$actionParam"));
 		$response = $request->send();
 		$input = $response->json();
 
@@ -1551,7 +1551,7 @@ class DomoticzController extends BaseController
 	{
 		switch ($device['Type']) {
 			// All switchs types
-			case (0 === strpos($device['Type'], 'Lighting')):
+			case (0 === strpos($device['Type'], 'Light')):
 				switch($device['SwitchType']) {
 					case 'On/Off':
 						$newType = 'DevSwitch';
