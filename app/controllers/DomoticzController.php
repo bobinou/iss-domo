@@ -1645,7 +1645,7 @@ class DomoticzController extends BaseController
 private static function convertDeviceStatus ($device)
 	{
 		switch ($device['Type']) {
-			case (0 === strpos($device['Type'], 'Lighting')):
+			case (0 === strpos($device['Type'], 'Light')):
 				switch($device['SwitchType']) {
 					case 'On/Off':
 						$output = array( array(
