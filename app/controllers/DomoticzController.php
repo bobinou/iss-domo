@@ -465,49 +465,60 @@ class DomoticzController extends BaseController
 		// action for Domoticz
 		if(Config::get('hardware.domoticz') == 1){
 		//*** For switchs, Dimmer, Lock ***
-		if($actionName == 'setStatus' OR $actionName == 'pulseShutter'){
-			if(strpos($deviceId, 'noroom')){
-				$arraydeviceId = explode("-", $deviceId);
-				$deviceId = $arraydeviceId[0];
-			}
-		$actionName = 'setStatus' == $actionName ? 'switchlight' : $actionName;
-		$actionParam = '0' == $actionParam ? 'Off' : 'On';
-		$client = $this->getClient();
-		$request = $client->getClient()->createRequest('GET', get_url(Config::get('iss-domo.domoticz_url'), "json.htm?type=command&param={$actionName}&idx={$deviceId}&switchcmd=$actionParam"));
-		$response = $request->send();
-		$input = $response->json();
+         if($actionName == 'setStatus' OR $actionName == 'pulseShutter'){
+            if(strpos($deviceId, 'noroom')){
+               $arraydeviceId = explode("-", $deviceId);
+               $deviceId = $arraydeviceId[0];
+            }
+            $actionName = 'setStatus' == $actionName ? 'switchlight' : $actionName;
+            $actionParam = '0' == $actionParam ? 'Off' : 'On';
+            $client = $this->getClient();
+            $request = $client->getClient()->createRequest('GET', get_url(Config::get('iss-domo.domoticz_url'), "json.htm?type=command&param={$actionName}&idx={$deviceId}&switchcmd=$actionParam"));
+            $response = $request->send();
+            $input = $response->json();
 
-		// convert to app format
-		$output = array('success' => ('OK' === $input['status'] ? true : false), 'errormsg' => ('ERR' === $input['status'] ? 'An error occured' : ''));
+            // convert to app format
+            $output = array('success' => ('OK' === $input['status'] ? true : false), 'errormsg' => ('ERR' === $input['status'] ? 'An error occured' : ''));
 
-		return Response::json($output);
-		}
+            return Response::json($output);
+         }
 		
 		//*** For Dimmer, Blinds ***
-		if($actionName == 'setLevel'){
-			if(strpos($deviceId, 'noroom')){
-				$arraydeviceId = explode("-", $deviceId);
-				$deviceId = $arraydeviceId[0];
-			}
-		$actionName = 'setLevel' == $actionName ? 'switchlight' : $actionName;
-		$actionParam = '0' == $actionParam ? 'On' : 'Off';
-		$client = $this->getClient();
-		$request = $client->getClient()->createRequest('GET', get_url(Config::get('iss-domo.domoticz_url'), "json.htm?type=command&param={$actionName}&idx={$deviceId}&switchcmd=$actionParam"));
-		$response = $request->send();
-		$input = $response->json();
+      if($actionName == 'setLevel' OR $actionName == 'stopShutter'){
+         if(strpos($deviceId, 'noroom')){
+            $arraydeviceId = explode("-", $deviceId);
+            $deviceId = $arraydeviceId[0];
+         }
+         $actionName = 'setLevel' == $actionName ? 'switchlight' : $actionName;
+         $actionName = 'stopShutter' == $actionName ? 'switchlight' : $actionName;
+         switch($actionParam){
+         case '0':
+            $actionParam = 'On';
+            break;
+         case '100':
+            $actionParam = 'Off';
+            break;
+         default:
+            $actionParam = 'Stop';
+            break;
+         }
+         $client = $this->getClient();
+         $request = $client->getClient()->createRequest('GET', get_url(Config::get('iss-domo.domoticz_url'), "json.htm?type=command&param={$actionName}&idx={$deviceId}&switchcmd=$actionParam"));
+         $response = $request->send();
+         $input = $response->json();
 
-		// convert to app format
-		$output = array('success' => ('OK' === $input['status'] ? true : false), 'errormsg' => ('ERR' === $input['status'] ? 'An error occured' : ''));
+         // convert to app format
+         $output = array('success' => ('OK' === $input['status'] ? true : false), 'errormsg' => ('ERR' === $input['status'] ? 'An error occured' : ''));
 
-		return Response::json($output);
-		}
+         return Response::json($output);
+      }
 		
 		//*** For Scenes in Rooms***
 		if($actionName == 'launchScene' AND is_numeric($deviceId)){
 		$actionName = 'launchScene' == $actionName ? 'switchscene' : $actionName;
 		$actionParam = '0' == $actionParam ? 'Off' : 'On';
 		$client = $this->getClient();
-		$request = $client->getClient()->createRequest('GET', get_url(Config::get('iss-domo.domoticz_url'), "json.htm?type=command&param={$actionName}&idx={$deviceId}}&switchcmd=$actionParam"));
+		$request = $client->getClient()->createRequest('GET', get_url(Config::get('iss-domo.domoticz_url'), "json.htm?type=command&param={$actionName}&idx={$deviceId}&switchcmd=$actionParam"));
 		$response = $request->send();
 		$input = $response->json();
 
@@ -524,7 +535,7 @@ class DomoticzController extends BaseController
 		$actionName = 'launchScene' == $actionName ? 'switchscene' : $actionName;
 		$actionParam = '0' == $actionParam ? 'Off' : 'On';
 		$client = $this->getClient();
-		$request = $client->getClient()->createRequest('GET', get_url(Config::get('iss-domo.domoticz_url'), "json.htm?type=command&param={$actionName}&idx={$deviceId}}&switchcmd=$actionParam"));
+		$request = $client->getClient()->createRequest('GET', get_url(Config::get('iss-domo.domoticz_url'), "json.htm?type=command&param={$actionName}&idx={$deviceId}&switchcmd=$actionParam"));
 		$response = $request->send();
 		$input = $response->json();
 
@@ -1809,11 +1820,11 @@ private static function convertDeviceStatus ($device)
 			case 'RFY':
 						$output = array( array(
 							'key' => 'Level',
-							'value' => 'Closed' == $device['Status'] ? '0' : '100',
+							'value' => 'Closed' == $device['Status'] ? '0' : 'Open' == $device['Status'] ? '100' : '50',
 						),
 						array(
 							'key' => 'stopable',
-							'value' => '0',
+							'value' => '1',
 						),
 						array(
 							'key' => 'pulseable',
