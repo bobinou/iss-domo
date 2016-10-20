@@ -17,7 +17,7 @@ class DomoticzController extends BaseController
 	public function system()
 	{
 		return Response::json(array (
-			'id' => 'ISS-Domo v3.3.1',
+			'id' => 'ISS-Domo v3.3.2',
 			'apiversion' => 1,
 		));
 	}
