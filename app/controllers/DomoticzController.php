@@ -492,7 +492,7 @@ class DomoticzController extends BaseController
 		$actionName = 'setLevel' == $actionName ? 'switchlight' : $actionName;
 		$actionParam = '0' == $actionParam ? 'On' : 'Off';
 		$client = $this->getClient();
-		$request = $client->getClient()->createRequest('GET', get_url(Config::get('iss-domo.domoticz_url'), "json.htm?type=command&param={$actionName}&idx={$deviceId}}&switchcmd=$actionParam"));
+		$request = $client->getClient()->createRequest('GET', get_url(Config::get('iss-domo.domoticz_url'), "json.htm?type=command&param={$actionName}&idx={$deviceId}&switchcmd=$actionParam"));
 		$response = $request->send();
 		$input = $response->json();
 
